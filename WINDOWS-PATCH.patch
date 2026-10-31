@@ -1,0 +1,2244 @@
+diff --git a/.gitignore b/.gitignore
+index 29078f5..3e8721e 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -42,6 +42,19 @@ dist/
+ # Windows build
+ whisperflow_windows.zip
+ whisperflow_windows/
++.windows-env/
++.windows-data/
++.models/
++.native/
++.references/
++connections-local/
++.qwen-env/
++samples/
++windows-config.json
++.env
++.env.*
++!.env.example
++work/
+ 
+ # Claude Code (로컬 설정 + worktree)
+ .claude/
+diff --git a/CONNECTIONS.md b/CONNECTIONS.md
+new file mode 100644
+index 0000000..c30cb0d
+--- /dev/null
++++ b/CONNECTIONS.md
+@@ -0,0 +1,66 @@
++# GPT·Claude에서 공통 자비스 호출
++
++## 동작 방식
++
++GPT나 Claude가 답변/명령 처리를 담당하고, 자비스는 말할 문장을 받아 PC에서 음성을 생성·재생합니다. 별도의 GPT 답변 모델을 새로 학습할 필요가 없습니다. 기존 앱에서 아래 MCP 음성 도구를 호출할 때는 별도 OpenAI API 키도 필요하지 않습니다.
++
++- `jarvis_status`: 음성 서버와 참조 파일 설치 상태 확인
++- `jarvis_speak`: 문장, 캐릭터, 언어, 속도를 전달하여 말하기. 자비스는 `ko`/`en`, 데커드는 `ko`만 지원합니다.
++- `jarvis_stop`: 재생 중지
++
++두 앱은 같은 Qwen 서버를 사용합니다. 참조 녹음은 `.references`에 보관하며 공개 저장소에 포함하지 않습니다.
++
++## 로컬 MCP를 지원하는 앱
++
++1. `Setup-Native-Qwen.cmd`로 가벼운 CPU 런타임과 Qwen GGUF 모델을 설치하고 `Start-Qwen-CPU.cmd`로 음성 서버를 실행합니다. 기존 `Setup-Qwen-CPU.cmd`는 선택 사항인 무거운 PyTorch 비교 환경입니다.
++2. 앱의 MCP 서버 설정에 실행 명령을 등록합니다. 설치에 사용한 Python을 명령으로, 프로젝트의 `run_jarvis_mcp.py` 절대 경로를 인수로 사용합니다. `make_connection_configs.py`로 이 PC용 설정 예시를 만들 수 있으며, 앱의 실제 설정은 자동 변경하지 않습니다.
++3. 앱을 다시 열고 `jarvis_status`가 표시되는지 확인합니다. 연결 설정은 준비한 것과 앱에 실제 등록된 것을 구별해야 합니다.
++
++Codex 설정 예시(실제 경로로 교체):
++
++```toml
++[mcp_servers.jarvis_voice]
++command = 'C:\path\to\project\.qwen-env\Scripts\python.exe'
++args = ['-m', 'whisperflow.jarvis_mcp']
++cwd = 'C:\path\to\project'
++```
++
++Claude Desktop/Claude Code 등 stdio MCP 호스트의 JSON 예시:
++
++```json
++{
++  "mcpServers": {
++    "jarvis_voice": {
++      "command": "C:/path/to/project/.qwen-env/Scripts/python.exe",
++      "args": ["C:/path/to/project/run_jarvis_mcp.py"]
++    }
++  }
++}
++```
++
++## Claude 웹앱 및 ChatGPT 웹앱
++
++웹앱의 원격 커넥터는 제공사 클라우드에서 서버에 연결하므로 이 PC의 `localhost` 주소로는 연결되지 않습니다. HTTPS로 접근할 수 있는 원격 MCP 서버와 인증 연결이 추가로 필요합니다. 코드를 GitHub에 올리는 것만으로 서버가 실행되거나 연결되는 것은 아닙니다.
++
++이 버전은 PC를 인터넷에 공개하지 않습니다. 로컬 HTTP MCP 시험은 `python -m whisperflow.jarvis_mcp --http`로 제공하며 기본 주소는 `http://127.0.0.1:8768/mcp`입니다. 인증 없이 이 포트를 인터넷에 공개하지 마세요. 웹앱용 OAuth/원격 배포는 아직 구성하지 않았습니다.
++
++공식 안내:
++
++- https://learn.chatgpt.com/docs/extend/mcp
++- https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp
++
++## 목소리
++
++- 자비스: 사용자 소유 PC의 참조 녹음으로 영어/한국어 생성. 한국어는 교차 언어 합성 결과를 직접 확인하며 조정해야 합니다.
++- 로봇수사대 케이캅스 데커드: 검증한 참조 구간을 사용하고 기본 `robot_effect=soft`를 적용합니다. `none`/`strong`으로 변경할 수 있습니다. 사용자 확인 없는 회차 전체를 학습 자료로 취급하지 않습니다.
++- 설명으로 새 음색을 만드는 `design:ko`/`design:en`도 지원하지만 더 큰 모델과 여유 메모리가 필요합니다.
++
++참조 녹음 준비 예시:
++
++```powershell
++.qwen-env/Scripts/python.exe prepare_reference.py "reference.m4a" --character jarvis --start 3 --duration 12
++```
++
++`--character deckard`로 데커드 참조 파일을 준비할 수 있습니다. 배경음악이나 다른 인물의 대사가 없는 구간을 고르고 직접 확인하세요. 파일을 준비한 것과 합성 품질이 검증된 것은 다릅니다.
++
++추가 회차에서 후보를 찾는 선택 사항 도구는 `find_voice_candidates.py`입니다. 이미 다운로드한 Python Qwen 체크포인트의 화자 인코더만 사용하며, 유사도는 신원 확인이나 화자 확정이 아닙니다. 후보를 듣고 확인하기 전에는 승인된 참조 음성을 자동 교체하지 않습니다. 가중치 미세조정을 실행한 것으로 표현하지 않습니다.
+diff --git a/HANDOFF.md b/HANDOFF.md
+new file mode 100644
+index 0000000..02e0732
+--- /dev/null
++++ b/HANDOFF.md
+@@ -0,0 +1,45 @@
++# 공동 작업 인계 — GPT·Claude 공통 자비스
++
++## 확정 요구사항
++
++1. Windows에서 실행합니다.
++2. 사용자는 지금 사용하는 GPT/Codex와 Claude 앱 각각에서 자비스 도구를 호출하고 싶어 합니다. 별도 화면에서 답변 모델을 고르는 것이 주된 목적은 아닙니다.
++3. 목소리는 **자비스**, **로봇수사대 케이캅스 데커드** 두 가지입니다.
++4. 최종 조합은 **자비스 한국어 / 자비스 영어 / 데커드 한국어**입니다. 사용자는 영어 데커드는 필요 없다고 정정했습니다. 데커드의 영어 선택과 호출은 막습니다.
++5. 공개 GitHub 저장소로 코드를 공유합니다. 참조 녹음·대화·비밀 키·모델은 제외합니다.
++
++## 구현
++
++- `whisperflow/jarvis_mcp.py`: 기존 AI 앱에서 사용하는 음성 도구 3개, stdio 및 loopback HTTP.
++- `whisperflow/windows_qwen.py`: 단일 로컬 Qwen 서버. 생성, PC 재생, 정지, 참조 파일 상태.
++- `whisperflow/windows.py`: 기존 시각화를 사용하는 Windows 웹 화면과 대화 어댑터.
++- `whisperflow/windows_openai.py`: 선택 사항인 독립 화면용 GPT Responses API 어댑터. 기존 AI 앱에서 MCP를 호출하는 방식에는 이 API 어댑터나 별도 GPT API 키가 필요하지 않습니다.
++- `whisperflow/static/windows-language.js`: 캐릭터·언어·속도 설정과 미리듣기.
++- `prepare_reference.py`: 로컬 참조 파일의 3–30초 구간 추출. `.references`는 Git 제외.
++
++## 미완료·검증 한계
++
++- 로컬 MCP 호스트의 핸드셰이크 및 도구 목록을 검증했습니다. 사용자의 Codex 설정에 `jarvis_voice` 항목을 추가하고 기존 설정을 로컬 백업했습니다. 앱의 도구 재로딩/새 채팅에서 실제 호출되는지는 아직 확인하지 않았습니다.
++- 현재 사용자의 Claude는 Chrome 기반 웹앱입니다. 로컬 stdio MCP를 직접 연결할 수 없으며 인증된 원격 HTTPS MCP 연결이 별도로 필요합니다. 공개 터널이나 외부 서버는 만들지 않았습니다.
++- Qwen PyTorch CPU 생성은 느렸으나, 이후 공식 llama.cpp CPU 런타임과 Qwen 1.7B GGUF Q4 모델로 자비스 영어·데커드 한국어/영어 시험 생성에 성공했습니다. 약 12–15초의 전체 실행으로 1–2초 음성을 생성한 결과이며 실시간 대화를 보장하지 않습니다. 한국어 자비스 첫 샘플은 Python Qwen 0.6B로 생성했고 사용자가 수용했습니다.
++- 자비스 참조 구간은 후보로만 준비했습니다. 사람이 들으며 구간 적절성을 확인해야 합니다.
++- 사용자가 지정한 데커드 구간: EP21 6–9초/24–35초, EP35 45–49초, EP40-3 8–10초/146–151초. 이를 25.5초 로컬 참조로 준비했습니다. 실제 녹음 파일은 공개 소스에서 제외합니다.
++- 데커드에는 사용자가 **약한 로봇 효과**를 선택했습니다. `voice_effects.py`의 soft 기본값을 유지합니다. 영어 데커드는 제공하지 않습니다.
++- 추가 EP01은 화자 유사도 후보 추출 대상으로 사용합니다. `find_voice_candidates.py`의 출력은 사람이 확인할 후보이며 실제 가중치 추가 학습이나 화자 확정이 아닙니다.
++- EP01 전체 스캔에서 후보 6개를 추렸습니다. 실제 후보 파일과 분석 결과는 로컬에만 보관하고 공개하지 않습니다. 승인된 참조 파일을 자동 교체하지 않았습니다.
++- 공통 MCP의 `jarvis_speak` 호출을 통해 한국어 데커드의 실제 생성, soft 효과 적용, Windows 재생까지 확인했습니다. 사용자 앱에 등록한 상태와 이 프로토콜 검증은 구분합니다.
++- 최신 자동 검사는 17개 통과했습니다. 실제 모델 생성·청취 평가는 모의 응답 검사와 구분하며, 한국어 자비스 및 약한 데커드 효과는 사용자 피드백을 반영했습니다.
++- 영어 원본 재현과 한국어 교차 언어 합성은 청취 비교가 필요합니다. 동일 성우와 완전히 같은 결과를 보장하지 않습니다.
++- GitHub 저장소 생성은 확인됐습니다. 게시 내용이 확인되기 전에는 코드 업로드 완료라고 보고하지 않습니다.
++
++## 검증
++
++CPU 음성 환경에서:
++
++```powershell
++.qwen-env/Scripts/python.exe -m unittest discover -s tests -v
++.qwen-env/Scripts/python.exe -m whisperflow.windows_qwen --device cpu
++.qwen-env/Scripts/python.exe run_jarvis_mcp.py
++```
++
++`jarvis_speak`는 음성 합성 도구입니다. 임의 셸 실행이나 파일 수정 권한을 제공하지 않습니다. 기존 AI 앱의 명령 실행 기능은 그 앱의 권한과 도구를 따릅니다.
+diff --git a/README.md b/README.md
+index 0d3759f..b93e892 100644
+--- a/README.md
++++ b/README.md
+@@ -1,3 +1,29 @@
++# Jarvis Shared Voice — Windows 한국어 / English
++
++기존 GPT/Codex와 Claude에서 같은 로컬 음성 도구를 호출하는 Windows 확장판입니다.
++
++- **목소리:** 자비스 / 로봇수사대 케이캅스 데커드
++- **선택:** 자비스 한국어 / 자비스 English / 데커드 한국어. 영어 데커드는 제공하지 않습니다.
++- **공통 연결:** MCP의 `jarvis_status`, `jarvis_speak`, `jarvis_stop`
++- **역할 분리:** 기존 GPT·Claude가 명령 처리와 답변을 담당하고 Qwen은 음성 합성·재생을 담당합니다.
++- **확인 상태:** 한국어·영어 음성 샘플 생성과 MCP 프로토콜 연결을 검증했습니다. 데커드는 약한 로봇 효과를 기본으로 사용합니다. 기존 사용자 앱의 연결 설정과 원격 배포는 별도 단계입니다.
++- **권장 설치:** `Setup-Native-Qwen.cmd`로 공식 llama.cpp CPU 실행 파일과 Qwen GGUF 모델을 설치합니다. 짧은 시험 문장의 전체 실행은 약 12–15초였습니다. 실시간 음성 대화 수준의 지연을 보장하지 않습니다.
++
++설정 안내: [CONNECTIONS.md](CONNECTIONS.md), Windows 실행 안내: [WINDOWS.md](WINDOWS.md).
++
++웹앱의 원격 커넥터 연결은 로컬 MCP 연결과 다릅니다. GitHub에 코드를 올리는 것만으로 GPT·Claude 웹앱 연결이 완료되지는 않습니다. 원격 HTTPS/OAuth는 아직 배포하지 않았습니다.
++
++참조한 프로젝트:
++
++- [kshicdi/whisperflow](https://github.com/kshicdi/whisperflow): 원본 브라우저 시각화와 음성 서버 분리 구조. 원본 MIT 라이선스를 유지합니다.
++- [yogen-ghodke-113/VoiceClaw](https://github.com/yogen-ghodke-113/VoiceClaw): 대화와 실행 역할 분리, 상태 표시 구조 참고. 코드를 복사해 통합하지 않았습니다.
++
++영화·애니메이션 참조 녹음, 대화 기록, 모델, 계정 키는 공개 소스에 포함하지 않습니다. **케이캅스 데커드는 디아블로의 데커드 케인이 아닙니다.**
++
++---
++
++## 아래는 원본 macOS 프로젝트 설명입니다
++
+ # 🎤 WhisperFlow — JARVIS AI 어시스턴트
+ 
+ > macOS에서 로컬 음성인식 + AI 음성 응답 + 시각화 UI를 통합한 개인 어시스턴트
+diff --git a/Setup-Native-Qwen.cmd b/Setup-Native-Qwen.cmd
+new file mode 100644
+index 0000000..b2836ce
+--- /dev/null
++++ b/Setup-Native-Qwen.cmd
+@@ -0,0 +1,9 @@
++@echo off
++setlocal
++cd /d "%~dp0"
++if exist "%USERPROFILE%\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" (
++  "%USERPROFILE%\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" setup_native_windows.py
++) else (
++  py -3 setup_native_windows.py
++)
++pause
+diff --git a/Setup-Qwen-CPU.cmd b/Setup-Qwen-CPU.cmd
+new file mode 100644
+index 0000000..f205f07
+--- /dev/null
++++ b/Setup-Qwen-CPU.cmd
+@@ -0,0 +1,9 @@
++@echo off
++setlocal
++cd /d "%~dp0"
++if exist "%USERPROFILE%\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" (
++  "%USERPROFILE%\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" setup_qwen_windows.py
++) else (
++  py -3.12 setup_qwen_windows.py
++)
++pause
+diff --git a/Start-Jarvis-MCP.cmd b/Start-Jarvis-MCP.cmd
+new file mode 100644
+index 0000000..2a4ad3c
+--- /dev/null
++++ b/Start-Jarvis-MCP.cmd
+@@ -0,0 +1,8 @@
++@echo off
++setlocal
++cd /d "%~dp0"
++if exist "%USERPROFILE%\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" (
++  "%USERPROFILE%\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" run_jarvis_mcp.py
++) else (
++  py -3 run_jarvis_mcp.py
++)
+diff --git a/Start-Qwen-CPU.cmd b/Start-Qwen-CPU.cmd
+new file mode 100644
+index 0000000..67cf1e0
+--- /dev/null
++++ b/Start-Qwen-CPU.cmd
+@@ -0,0 +1,9 @@
++@echo off
++setlocal
++cd /d "%~dp0"
++if exist "%USERPROFILE%\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" (
++  "%USERPROFILE%\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" launch_qwen_windows.py
++) else (
++  py -3 launch_qwen_windows.py
++)
++if errorlevel 1 pause
+diff --git a/Start-Windows.cmd b/Start-Windows.cmd
+new file mode 100644
+index 0000000..beb9190
+--- /dev/null
++++ b/Start-Windows.cmd
+@@ -0,0 +1,9 @@
++@echo off
++setlocal
++cd /d "%~dp0"
++if exist "%USERPROFILE%\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" (
++  "%USERPROFILE%\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" launch_windows.py
++) else (
++  py -3 launch_windows.py
++)
++if errorlevel 1 pause
+diff --git a/WINDOWS.md b/WINDOWS.md
+new file mode 100644
+index 0000000..437c7ec
+--- /dev/null
++++ b/WINDOWS.md
+@@ -0,0 +1,77 @@
++# WhisperFlow — Windows 한국어 / English
++
++현재 권장 설치는 **`Setup-Native-Qwen.cmd`**입니다. Qwen GGUF와 공식 llama.cpp CPU 실행 파일을 사용하며, 참조 음성과 모델은 이 PC에만 저장합니다. 기존 무거운 PyTorch 설치는 비교/분석용 선택 사항입니다. 실제 앱 연결은 [CONNECTIONS.md](CONNECTIONS.md)를 따르세요.
++
++최종 목소리는 **자비스 한국어 / 자비스 영어 / 데커드 한국어(약한 로봇 효과)**입니다. 영어 데커드는 제공하지 않습니다.
++
++원본: https://github.com/kshicdi/whisperflow (MIT). 이 폴더에는 원본과 별도의 Windows 실행 경로를 추가했습니다. 기존 macOS 실행 코드와 영어 효과음 파일은 변경하지 않았습니다.
++
++## 실행
++
++1. `Start-Windows.cmd`를 실행하세요. Python 3.11 이상이 필요하며, Codex의 Python이 있으면 자동으로 사용합니다. 일반 PC에서는 Python Launcher(`py`)가 필요합니다.
++2. 첫 실행에서 작은 서버 라이브러리를 이 폴더의 `.windows-env`에 설치합니다. 인터넷 연결이 필요합니다.
++3. 브라우저에 `http://127.0.0.1:8767`이 열립니다. 열린 실행 창을 닫으면 서버가 종료됩니다.
++4. 오른쪽 위 **음성 설정 · Voice**에서 **한국어 / English**를 선택하세요.
++
++언어별 목소리·속도·음성 엔진과 마지막 언어 선택은 브라우저에 각각 저장됩니다. 언어 선택은 마이크 인식 언어, AI 답변 언어, 읽어주는 음성을 함께 전환합니다. 다른 브라우저에서는 설정을 다시 선택해야 합니다.
++
++**미리듣기 / Preview**는 대화 엔진 없이도 사용할 수 있습니다. **시스템 기본 / System**은 PC에 설치된 음성을 사용합니다. 한국어 남성 음성이 설치돼 있지 않으면 기본 음성이 여성일 수 있으며, 이를 맞춤 남성 음성이라고 표시하지 않습니다.
++
++## 글자 대화
++
++**주된 사용 방식은 기존 GPT·Claude에서 공통 음성 도구를 호출하는 것입니다.** 먼저 [CONNECTIONS.md](CONNECTIONS.md)를 읽으세요. 아래 독립 화면의 대화 엔진 선택은 선택 사항입니다.
++
++독립 화면에서 GPT를 선택하면 OpenAI Responses API를 사용합니다. `OPENAI_API_KEY`는 서버 환경 변수에만 설정하며 브라우저나 GitHub에 넣지 않습니다. 모델은 `JARVIS_GPT_MODEL` 또는 화면에서 지정합니다. API 계정 접근과 사용료를 확인해야 하며, 실제 인증된 API 호출은 아직 검증하지 않았습니다. 공식 안내: https://developers.openai.com/api/docs/quickstart
++
++원본처럼 Claude Code를 응답 생성에 사용합니다. 별도의 설치와 본인 계정 로그인이 필요합니다. 이 프로그램은 로그인이나 구독을 대신하지 않습니다.
++
++- 공식 설치 안내: https://code.claude.com/docs/en/setup
++- `claude`를 찾지 못하면 `windows-config.example.json`을 `windows-config.json`으로 복사하고 `JARVIS_CLAUDE_PATH`에 설치된 실행 파일 경로를 지정하세요.
++- Windows 네이티브 `claude.exe`를 권장합니다. npm의 `.cmd` 설치는 같은 폴더의 Node 진입 파일이 있을 때 처리합니다.
++- 이 Windows 경로는 음성 대화용으로 Claude의 도구와 MCP를 비활성화합니다. 원본의 파일 조작 기능은 포함하지 않습니다.
++- 대화 기록은 이 폴더의 `.windows-data`에 저장합니다. Claude에 질문과 최근 대화가 전달됩니다.
++
++## 원하는 한국 남성 음색 만들기: 선택 사항
++
++음성 엔진은 두 가지입니다.
++
++- **System:** 설치된 시스템 음성. 별도의 모델 설치가 필요 없습니다.
++- **Qwen:** 로컬 Qwen3-TTS 서버. 음색 설명으로 새 음성을 생성합니다. 모델과 추가 라이브러리가 필요합니다.
++
++현재 확인한 GTX 1660 SUPER는 VRAM 6GB이며 드라이버는 457.51입니다. 최신 PyTorch CUDA 실행이 검증되지 않아 기본 설치 도우미는 **CPU용**으로 제공합니다. 드라이버를 자동 변경하지 않습니다. CPU 생성은 특히 첫 요청에서 오래 걸릴 수 있습니다.
++
++1. Python **3.12**로 `Setup-Qwen-CPU.cmd`를 실행하세요. 라이브러리와 모델에 수 GB의 다운로드·디스크 공간이 필요합니다.
++2. 설치 후 `Start-Qwen-CPU.cmd`를 실행하세요. 서버를 켜둡니다.
++3. 자비스 화면에서 음성을 **Qwen 맞춤 음성 / Custom**으로 바꾸세요.
++4. 한국어는 음성 ID를 **`design:ko`**, 영어는 **`design:en`**으로 설정하고 미리듣기를 누르세요.
++5. 첫 생성 때 Hugging Face에서 `Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign`을 `.models`에 내려받습니다. 인터넷과 충분한 시스템 RAM이 필요합니다. 모델 다운로드나 생성 실패는 화면에 표시합니다.
++
++맞춤 한국 남성 음색 설명은 `whisperflow/windows.py`의 `PROFILES['ko']`에서 조정할 수 있습니다. Qwen의 기본 지원 기능을 사용하며 녹음에서 별도 학습한 모델은 아닙니다. 동일한 설정과 시드를 사용해도 생성 문장 간 음색의 일관성은 직접 확인해야 합니다.
++
++Qwen 서버가 연결되지 않거나 생성에 실패하면 경고를 표시하고 시스템 음성으로 전환합니다. 이때 들리는 소리는 맞춤 음성이 아닙니다.
++
++## 기존 영어 목소리 보존
++
++원본 영어 효과음과 음성 ID `clone:jarvis`, 기본 속도 `1.4`를 유지했습니다. **원본 작성자의 실제 복제 음성 모델·참조 녹음·TTS 서버는 GitHub에 포함되지 않았습니다.** 따라서 이 코드만으로 영화와 동일한 음성이 바로 나오지는 않습니다.
++
++- 기존 호환 TTS 서버가 있다면 `windows-config.json`의 `QWEN_TTS_URL`을 지정하고 English에서 기존 음성 ID를 사용하세요.
++- 새 로컬 VoiceDesign 서버를 사용한다면 영어 음성 ID를 `design:en`으로 바꾸세요. 이 음성은 새로 설계한 영어 음성이며 원본 배우 음성 복제가 아닙니다.
++
++## 포함 범위와 확인 상태
++
++- 브라우저 화면, 한국어·영어 선택, 언어별 설정 저장, 대화 연결, 시스템 음성 미리듣기, Qwen 연결 규격, 말하기 정지.
++- Windows에서 실행하는 서버 연결 검사와 언어별 메시지·음성 라우팅 등 자동 검사를 통과했습니다.
++- 실제 Claude 로그인 후 대화, 인증된 GPT API 호출, 마이크 녹음, Qwen 모델 전체 설치와 실제 맞춤 음성 품질은 별도 확인이 필요합니다. MCP 및 캐릭터 선택 관련 검증은 HANDOFF.md도 확인하세요.
++- 마이크 인식은 브라우저의 Web Speech API입니다. 브라우저/서비스에 따라 외부 서버를 사용하므로 오프라인 Whisper라고 안내하지 않습니다.
++- 전역 단축키, 작업 표시줄 메뉴, 카메라·조명 제어, 자동 시작 등록은 추가하지 않았습니다. 원본의 macOS 시스템 설정을 그대로 실행하지 않습니다.
++- 서버는 기본적으로 이 PC에서만 접속 가능한 loopback 주소에 열립니다.
++
++## 개발 검증
++
++```powershell
++python -m pip install -r requirements-windows.txt
++python -m unittest discover -s tests -v
++python -m whisperflow.windows
++```
++
++공식 Qwen 문서: https://github.com/QwenLM/Qwen3-TTS
+diff --git a/find_voice_candidates.py b/find_voice_candidates.py
+new file mode 100644
+index 0000000..0e67f14
+--- /dev/null
++++ b/find_voice_candidates.py
+@@ -0,0 +1,109 @@
++"""Find similar-speaker candidates, not confirmed identities or fine-tuning data.
++
++Uses ONLY Qwen's small ECAPA speaker encoder from an already-downloaded
++checkpoint. It does not load the speech generator, upload audio, or replace
++the approved voice reference automatically.
++"""
++import argparse
++import json
++from pathlib import Path
++import subprocess
++import tempfile
++
++ROOT = Path(__file__).resolve().parent
++
++
++def main():
++    parser = argparse.ArgumentParser()
++    parser.add_argument('source', type=Path)
++    parser.add_argument('--character', choices=['jarvis','deckard'], default='deckard')
++    parser.add_argument('--output', type=Path, default=ROOT/'.references/candidates')
++    parser.add_argument('--window', type=float, default=4)
++    parser.add_argument('--step', type=float, default=6)
++    parser.add_argument('--top', type=int, default=8)
++    args = parser.parse_args()
++    if not args.source.is_file() or args.window < 2 or args.step < 1:
++        parser.error('Choose an existing audio file and a valid scan interval.')
++
++    import numpy as np
++    import soundfile as sf
++    import torch
++    import imageio_ffmpeg
++    from safetensors import safe_open
++    from qwen_tts.core.models.modeling_qwen3_tts import Qwen3TTSSpeakerEncoder, mel_spectrogram
++    from qwen_tts.core.models.configuration_qwen3_tts import Qwen3TTSSpeakerEncoderConfig
++    torch.set_num_threads(2)
++    snapshots = ROOT/'.models/hub/models--Qwen--Qwen3-TTS-12Hz-0.6B-Base/snapshots'
++    configs = list(snapshots.glob('*/config.json'))
++    if not configs:
++        raise SystemExit('The optional Python Qwen checkpoint must be downloaded first.')
++    checkpoint = configs[0].parent
++    config = json.loads(configs[0].read_text(encoding='utf-8'))
++    encoder = Qwen3TTSSpeakerEncoder(Qwen3TTSSpeakerEncoderConfig(**config['speaker_encoder_config']))
++    state = {}
++    for file in checkpoint.glob('*.safetensors'):
++        with safe_open(file, framework='pt', device='cpu') as weights:
++            for key in weights.keys():
++                if key.startswith('speaker_encoder.'):
++                    state[key.removeprefix('speaker_encoder.')] = weights.get_tensor(key).float()
++    encoder.load_state_dict(state)
++    encoder.eval()
++
++    @torch.inference_mode()
++    def embed(audio):
++        mels = mel_spectrogram(torch.from_numpy(audio).unsqueeze(0), n_fft=1024, num_mels=128,
++                               sampling_rate=24000, hop_size=256, win_size=1024, fmin=0, fmax=12000)
++        vector = encoder(mels.transpose(1,2))[0].float().numpy().flatten()
++        return vector / max(float(np.linalg.norm(vector)), 1e-9)
++
++    parts = list((ROOT/'.references'/f'{args.character}-parts').glob('*.wav'))
++    if not parts:
++        parts = [ROOT/'.references'/f'{args.character}.wav']
++    anchors = []
++    for part in parts:
++        audio, rate = sf.read(part, dtype='float32')
++        if rate != 24000:
++            raise ValueError('Reference WAV files must be 24kHz.')
++        anchors.append(embed(audio))
++    centroid = np.mean(anchors, axis=0)
++    centroid /= np.linalg.norm(centroid)
++    print('Reference encoder ready. Scanning local audio; candidates need listening review.', flush=True)
++    args.output.mkdir(parents=True, exist_ok=True)
++    candidates = []
++    with tempfile.TemporaryDirectory(dir=ROOT/'.references') as temporary:
++        decoded = Path(temporary)/'episode.wav'
++        subprocess.run([imageio_ffmpeg.get_ffmpeg_exe(), '-v','error','-i',str(args.source),
++                        '-ac','1','-ar','24000','-y',str(decoded)], check=True, capture_output=True)
++        with sf.SoundFile(decoded) as episode:
++            duration = len(episode)/episode.samplerate
++            for index, start in enumerate(np.arange(0, max(0,duration-args.window), args.step)):
++                episode.seek(int(start*24000))
++                audio = episode.read(int(args.window*24000), dtype='float32')
++                if float(np.sqrt(np.mean(audio**2))) < .008:
++                    continue
++                similarity = float(np.dot(embed(audio), centroid))
++                candidates.append({'start':round(float(start),2), 'end':round(float(start+args.window),2),
++                                   'similarity':round(similarity,4), 'confirmed':False})
++                if index % 25 == 0:
++                    print(f'Scanned {int(start)} / {int(duration)} seconds', flush=True)
++            selected = []
++            for candidate in sorted(candidates, key=lambda item:item['similarity'], reverse=True):
++                if any(abs(candidate['start']-item['start']) < args.window for item in selected):
++                    continue
++                selected.append(candidate)
++                if len(selected) == args.top:
++                    break
++            for index, candidate in enumerate(selected,1):
++                episode.seek(int(candidate['start']*24000))
++                audio = episode.read(int(args.window*24000), dtype='float32')
++                name = f'{args.character}-candidate-{index:02}.wav'
++                sf.write(args.output/name, audio, 24000, subtype='PCM_16')
++                candidate['file'] = name
++    report = {'method':'Qwen ECAPA cosine similarity; not speaker identity confirmation',
++              'source':args.source.name, 'reference_parts':len(anchors), 'candidates':selected}
++    (args.output/'candidates.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
++    print('Saved candidate clips and report. The approved reference was not changed.', flush=True)
++
++
++if __name__ == '__main__':
++    main()
+diff --git a/launch_qwen_windows.py b/launch_qwen_windows.py
+new file mode 100644
+index 0000000..a1a9e89
+--- /dev/null
++++ b/launch_qwen_windows.py
+@@ -0,0 +1,38 @@
++"""Use an installed local voice runtime without putting its path in public source."""
++import json
++from pathlib import Path
++import subprocess
++import sys
++import os
++
++ROOT = Path(__file__).resolve().parent
++
++
++def runtime():
++    if (ROOT/'.windows-env/mcp').is_dir():
++        return Path(sys.executable)
++    default = ROOT / '.qwen-env/Scripts/python.exe'
++    config = ROOT / 'windows-config.json'
++    if default.is_file():
++        return default
++    if config.is_file():
++        value = json.loads(config.read_text(encoding='utf-8-sig')).get('QWEN_PYTHON', '')
++        if value and Path(value).is_file():
++            return Path(value)
++    raise RuntimeError('Run Setup-Qwen-CPU.cmd first.')
++
++
++if __name__ == '__main__':
++    try:
++        config = ROOT / 'windows-config.json'
++        if config.is_file():
++            values = json.loads(config.read_text(encoding='utf-8-sig'))
++            for key in ('JARVIS_NATIVE_DIR','JARVIS_NATIVE_MODEL_DIR','HF_HOME'):
++                if values.get(key):
++                    os.environ[key] = str(values[key])
++        os.environ['PYTHONPATH'] = str(ROOT/'.windows-env') + os.pathsep + os.environ.get('PYTHONPATH','')
++        raise SystemExit(subprocess.call([str(runtime()), '-m', 'whisperflow.windows_qwen',
++                                         '--device', 'cpu'], cwd=str(ROOT)))
++    except RuntimeError as exc:
++        print(exc)
++        raise SystemExit(1)
+diff --git a/launch_windows.py b/launch_windows.py
+new file mode 100644
+index 0000000..56dc85c
+--- /dev/null
++++ b/launch_windows.py
+@@ -0,0 +1,42 @@
++"""Double-click bootstrap: install only the small browser-server dependency locally."""
++import argparse
++import importlib.util
++import os
++from pathlib import Path
++import subprocess
++import sys
++
++ROOT = Path(__file__).resolve().parent
++
++
++def main():
++    if sys.version_info < (3, 11):
++        raise SystemExit('Python 3.11 or newer is required. Install Python from python.org.')
++    parser = argparse.ArgumentParser()
++    parser.add_argument('--no-open', action='store_true')
++    parser.add_argument('--port', type=int, default=8767)
++    args = parser.parse_args()
++    dependencies = ROOT / '.windows-env'
++    sys.path.insert(0, str(dependencies))
++    if importlib.util.find_spec('websockets') is None:
++        print('Preparing the local browser server (first launch only)...', flush=True)
++        subprocess.run([sys.executable, '-m', 'pip', 'install', '--target', str(dependencies),
++                        '-r', str(ROOT / 'requirements-windows.txt')], check=True)
++    # Read only the non-secret configuration entries needed by this application.
++    config = ROOT / 'windows-config.json'
++    if config.exists():
++        import json
++        values = json.loads(config.read_text(encoding='utf-8-sig'))
++        for key in ('QWEN_TTS_URL', 'JARVIS_CLAUDE_PATH', 'JARVIS_TTS_VOICE', 'JARVIS_TTS_SPEED', 'JARVIS_GPT_MODEL'):
++            if values.get(key) is not None:
++                os.environ[key] = str(values[key])
++    from whisperflow.windows import run
++    import asyncio
++    try:
++        asyncio.run(run(args.port, open_browser=not args.no_open))
++    except KeyboardInterrupt:
++        pass
++
++
++if __name__ == '__main__':
++    main()
+diff --git a/make_connection_configs.py b/make_connection_configs.py
+new file mode 100644
+index 0000000..7e7c77d
+--- /dev/null
++++ b/make_connection_configs.py
+@@ -0,0 +1,17 @@
++"""Generate private, machine-specific MCP snippets; does not edit app settings."""
++import json
++from pathlib import Path
++from launch_qwen_windows import runtime
++
++ROOT = Path(__file__).resolve().parent
++
++if __name__ == '__main__':
++    python = str(runtime()).replace('\\', '/')
++    script = str(ROOT / 'run_jarvis_mcp.py').replace('\\', '/')
++    destination = ROOT / 'connections-local'
++    destination.mkdir(exist_ok=True)
++    config = {'mcpServers': {'jarvis_voice': {'command': python, 'args': [script]}}}
++    (destination / 'claude-mcp.json').write_text(json.dumps(config, indent=2), encoding='utf-8')
++    toml = f"[mcp_servers.jarvis_voice]\ncommand = '{python}'\nargs = ['{script}']\n"
++    (destination / 'codex-mcp.toml').write_text(toml, encoding='utf-8')
++    print('Prepared local connection snippets. No application settings were changed.')
+diff --git a/prepare_reference.py b/prepare_reference.py
+new file mode 100644
+index 0000000..018932f
+--- /dev/null
++++ b/prepare_reference.py
+@@ -0,0 +1,28 @@
++"""Prepare a PRIVATE reference clip. Never adds recordings to Git."""
++import argparse
++from pathlib import Path
++import subprocess
++
++
++def main():
++    parser = argparse.ArgumentParser()
++    parser.add_argument('source', type=Path)
++    parser.add_argument('--character', choices=['jarvis', 'deckard'], required=True)
++    parser.add_argument('--start', type=float, default=0)
++    parser.add_argument('--duration', type=float, default=12)
++    args = parser.parse_args()
++    if not args.source.is_file() or args.start < 0 or not 3 <= args.duration <= 30:
++        parser.error('Choose an existing audio file and a 3–30 second speech excerpt.')
++    import imageio_ffmpeg
++    root = Path(__file__).resolve().parent
++    destination = root / '.references' / (args.character + '.wav')
++    destination.parent.mkdir(exist_ok=True)
++    subprocess.run([imageio_ffmpeg.get_ffmpeg_exe(), '-v', 'error', '-ss', str(args.start),
++                    '-i', str(args.source), '-t', str(args.duration), '-ac', '1', '-ar', '24000',
++                    '-af', 'highpass=f=70,lowpass=f=10000', '-y', str(destination)],
++                   check=True, capture_output=True)
++    print('Private reference prepared. Listen and verify the chosen excerpt before voice cloning.')
++
++
++if __name__ == '__main__':
++    main()
+diff --git a/requirements-qwen-windows.txt b/requirements-qwen-windows.txt
+new file mode 100644
+index 0000000..f1c7135
+--- /dev/null
++++ b/requirements-qwen-windows.txt
+@@ -0,0 +1,6 @@
++# Install torch separately using the instructions in WINDOWS.md.
++qwen-tts==0.1.1
++soundfile>=0.12
++imageio-ffmpeg>=0.6,<1
++mcp>=1.20,<2
++websockets>=14,<16
+diff --git a/requirements-windows.txt b/requirements-windows.txt
+new file mode 100644
+index 0000000..ef24903
+--- /dev/null
++++ b/requirements-windows.txt
+@@ -0,0 +1,4 @@
++websockets>=14,<16
++mcp>=1.20,<2
++imageio-ffmpeg>=0.6,<1
++numpy>=1.24
+diff --git a/run_jarvis_mcp.py b/run_jarvis_mcp.py
+new file mode 100644
+index 0000000..7d941be
+--- /dev/null
++++ b/run_jarvis_mcp.py
+@@ -0,0 +1,8 @@
++"""Absolute-path stdio entry point for MCP hosts that don't set cwd."""
++from pathlib import Path
++import sys
++sys.path.insert(0, str(Path(__file__).resolve().parent / '.windows-env'))
++from whisperflow.jarvis_mcp import mcp
++
++if __name__ == '__main__':
++    mcp.run(transport='stdio')
+diff --git a/setup_native_windows.py b/setup_native_windows.py
+new file mode 100644
+index 0000000..78802b0
+--- /dev/null
++++ b/setup_native_windows.py
+@@ -0,0 +1,58 @@
++"""Install the verified official llama.cpp CPU build and Qwen GGUF locally."""
++from concurrent.futures import ThreadPoolExecutor
++import hashlib
++import json
++from pathlib import Path
++import subprocess
++import sys
++import urllib.request
++import zipfile
++
++ROOT = Path(__file__).resolve().parent
++
++
++def main():
++    if sys.version_info < (3, 11):
++        raise SystemExit('Python 3.11 or newer is required.')
++    subprocess.run([sys.executable, '-m', 'pip', 'install', '--target', str(ROOT/'.windows-env'),
++                    '-r', str(ROOT/'requirements-windows.txt')], check=True)
++    native, models = ROOT/'.native/llama', ROOT/'.models/gguf'
++    native.mkdir(parents=True, exist_ok=True)
++    models.mkdir(parents=True, exist_ok=True)
++    with urllib.request.urlopen(urllib.request.Request(
++            'https://api.github.com/repos/ggml-org/llama.cpp/releases/tags/b11960',
++            headers={'User-Agent':'JarvisVoiceSetup'}), timeout=30) as response:
++        release = json.load(response)
++    asset = next(item for item in release['assets']
++                 if item['name'] == 'llama-b11960-bin-win-cpu-x64.zip')
++    base = 'https://huggingface.co/ggml-org/Qwen3-TTS-12Hz-1.7B-Base-GGUF/resolve/main/'
++    jobs = [(asset['browser_download_url'], native/'release.zip'),
++            (base+'Qwen3-TTS-12Hz-1.7B-Base-Q4_K_M.gguf', models/'tts-q4.gguf'),
++            (base+'mmproj-Qwen3-TTS-12Hz-1.7B-Base-Q8_0.gguf', models/'codec-q8.gguf')]
++
++    def download(job):
++        url, path = job
++        if path.is_file():
++            return
++        temporary = path.with_suffix(path.suffix+'.partial')
++        with urllib.request.urlopen(url, timeout=120) as response, temporary.open('wb') as file:
++            while data := response.read(1024*1024):
++                file.write(data)
++        temporary.replace(path)
++        print('Downloaded '+path.name, flush=True)
++
++    with ThreadPoolExecutor(max_workers=3) as pool:
++        list(pool.map(download, jobs))
++    digest = hashlib.sha256((native/'release.zip').read_bytes()).hexdigest()
++    if asset.get('digest') != 'sha256:'+digest:
++        raise RuntimeError('Official release checksum mismatch.')
++    with zipfile.ZipFile(native/'release.zip') as archive:
++        for info in archive.infolist():
++            if not (native/info.filename).resolve().is_relative_to(native.resolve()):
++                raise RuntimeError('Unsafe archive path.')
++        archive.extractall(native)
++    print('Native Qwen is ready. Prepare local voice references, then run Start-Qwen-CPU.cmd.')
++
++
++if __name__ == '__main__':
++    main()
+diff --git a/setup_qwen_windows.py b/setup_qwen_windows.py
+new file mode 100644
+index 0000000..1b44e08
+--- /dev/null
++++ b/setup_qwen_windows.py
+@@ -0,0 +1,25 @@
++"""Explicit optional CPU setup. Models download only on first generation."""
++from pathlib import Path
++import subprocess
++import sys
++import venv
++
++ROOT = Path(__file__).resolve().parent
++
++
++def main():
++    if sys.version_info[:2] != (3, 12):
++        raise SystemExit('Please run this optional setup with Python 3.12.')
++    directory = ROOT / '.qwen-env'
++    venv.EnvBuilder(with_pip=False).create(directory)
++    python = directory / ('Scripts/python.exe' if sys.platform == 'win32' else 'bin/python')
++    command = [sys.executable, '-m', 'pip', '--python', str(python), 'install']
++    print('Installing optional CPU speech dependencies. This requires a large download.', flush=True)
++    subprocess.run(command + ['torch>=2.6,<3', 'torchaudio', '--index-url',
++                              'https://download.pytorch.org/whl/cpu'], check=True)
++    subprocess.run(command + ['-r', str(ROOT / 'requirements-qwen-windows.txt')], check=True)
++    print('Ready. Run Start-Qwen-CPU.cmd, then choose Qwen and voice ID design:ko or design:en.')
++
++
++if __name__ == '__main__':
++    main()
+diff --git a/tests/test_mcp.py b/tests/test_mcp.py
+new file mode 100644
+index 0000000..d4ae102
+--- /dev/null
++++ b/tests/test_mcp.py
+@@ -0,0 +1,38 @@
++import asyncio
++import json
++from pathlib import Path
++import sys
++import unittest
++
++from mcp import ClientSession, StdioServerParameters
++from mcp.client.stdio import stdio_client
++
++ROOT = Path(__file__).resolve().parents[1]
++
++
++class MCPTests(unittest.IsolatedAsyncioTestCase):
++    async def test_stdio_initialization_tools_and_local_status(self):
++        parameters = StdioServerParameters(command=sys.executable,
++                                           args=[str(ROOT / 'run_jarvis_mcp.py')])
++        async with stdio_client(parameters) as streams:
++            async with ClientSession(*streams) as client:
++                await client.initialize()
++                names = {tool.name for tool in (await client.list_tools()).tools}
++                self.assertEqual(names, {'jarvis_status', 'jarvis_speak', 'jarvis_stop'})
++                result = await client.call_tool('jarvis_status')
++                self.assertFalse(result.isError)
++                # Ready false is also a valid status when the companion service isn't running.
++                content = json.loads(result.content[0].text)
++                self.assertIsInstance(content['ready'], bool)
++                schema = next(tool for tool in (await client.list_tools()).tools
++                              if tool.name == 'jarvis_speak').inputSchema
++                self.assertEqual(set(schema['properties']['character']['enum']), {'jarvis', 'deckard'})
++                self.assertEqual(set(schema['properties']['language']['enum']), {'ko', 'en'})
++
++    async def test_english_deckard_is_rejected_before_contacting_service(self):
++        from whisperflow.jarvis_mcp import jarvis_speak
++        from unittest.mock import patch
++        with patch('whisperflow.jarvis_mcp.request_service') as request:
++            with self.assertRaises(ValueError):
++                jarvis_speak('Hello', language='en', character='deckard')
++            request.assert_not_called()
+diff --git a/tests/test_native.py b/tests/test_native.py
+new file mode 100644
+index 0000000..5e6c3d5
+--- /dev/null
++++ b/tests/test_native.py
+@@ -0,0 +1,49 @@
++import io
++from pathlib import Path
++import tempfile
++import unittest
++from unittest.mock import patch
++import wave
++
++from whisperflow import native_qwen
++from whisperflow.voice_effects import robot_effect
++
++
++def sample():
++    import numpy as np
++    output = io.BytesIO()
++    time = np.arange(4800)/24000
++    audio = (.3*np.sin(2*np.pi*220*time)*32767).astype('<i2').tobytes()
++    with wave.open(output,'wb') as file:
++        file.setnchannels(1)
++        file.setsampwidth(2)
++        file.setframerate(24000)
++        file.writeframes(audio)
++    return output.getvalue()
++
++
++class NativeTests(unittest.TestCase):
++    def test_native_command_does_not_use_a_shell_and_keeps_unicode_text_intact(self):
++        with tempfile.TemporaryDirectory() as temporary:
++            paths = [Path(temporary)/name for name in ('runtime.exe','model.gguf','codec.gguf')]
++            for file in paths:
++                file.touch()
++            def run(command, **kwargs):
++                self.assertNotIn('shell',kwargs)
++                self.assertEqual(command[command.index('-p')+1], '준비 완료. $(ignored)')
++                Path(command[command.index('--output')+1]).write_bytes(sample())
++                return type('Result',(),{'returncode':0})()
++            with patch('whisperflow.native_qwen.paths',return_value=paths), \
++                    patch('subprocess.run',side_effect=run):
++                result = native_qwen.generate('준비 완료. $(ignored)',Path('reference.wav'),'ko')
++                self.assertEqual(result[:4], b'RIFF')
++
++    def test_soft_effect_is_valid_audio_and_none_preserves_original(self):
++        original = sample()
++        self.assertEqual(robot_effect(original,'none'), original)
++        changed = robot_effect(original,'soft')
++        self.assertNotEqual(changed, original)
++        with wave.open(io.BytesIO(changed),'rb') as file:
++            self.assertEqual(file.getframerate(),24000)
++            self.assertEqual(file.getnchannels(),1)
++            self.assertGreater(file.getnframes(),4000)
+diff --git a/tests/test_openai.py b/tests/test_openai.py
+new file mode 100644
+index 0000000..754444f
+--- /dev/null
++++ b/tests/test_openai.py
+@@ -0,0 +1,30 @@
++import io
++import json
++import os
++import unittest
++from unittest.mock import patch
++
++from whisperflow.windows_openai import request_gpt
++
++
++class GPTTests(unittest.TestCase):
++    def test_responses_request_preserves_history_language_and_extracts_text(self):
++        body = {'output': [{'type': 'reasoning'}, {'type': 'message', 'content': [
++            {'type': 'output_text', 'text': 'Ready.'}]}]}
++        response = io.StringIO(json.dumps(body))
++        with patch.dict(os.environ, {'OPENAI_API_KEY': 'dummy-test-value'}), \
++                patch('urllib.request.urlopen', return_value=response) as mock:
++            answer = request_gpt([{'role': 'user', 'content': 'Hello'}], 'AI 1.4', 'en', 'gpt-5-mini')
++        self.assertEqual(answer, 'Ready.')
++        request = mock.call_args.args[0]
++        payload = json.loads(request.data)
++        self.assertFalse(payload['store'])
++        self.assertIn('English', payload['instructions'])
++        self.assertEqual(payload['input'][-1]['content'], 'AI 1.4')
++        self.assertNotIn('dummy-test-value', request.data.decode())
++
++    def test_missing_key_does_not_make_a_network_request(self):
++        with patch.dict(os.environ, {'OPENAI_API_KEY': ''}), patch('urllib.request.urlopen') as mock:
++            with self.assertRaises(RuntimeError):
++                request_gpt([], 'Hello', 'en', 'gpt-5-mini')
++            mock.assert_not_called()
+diff --git a/tests/test_voice_service.py b/tests/test_voice_service.py
+new file mode 100644
+index 0000000..7a57ba8
+--- /dev/null
++++ b/tests/test_voice_service.py
+@@ -0,0 +1,71 @@
++import io
++import json
++import threading
++import unittest
++from http.server import ThreadingHTTPServer
++import urllib.request
++import urllib.error
++from unittest.mock import patch
++import wave
++
++from whisperflow.windows_qwen import make_handler
++
++
++class FakeDesigner:
++    model = None
++    playback_generation = 0
++    playback_lock = threading.Lock()
++
++    def __init__(self):
++        self.requests = []
++
++    def generate(self, data):
++        self.requests.append(data)
++        buffer = io.BytesIO()
++        with wave.open(buffer, 'wb') as file:
++            file.setnchannels(1)
++            file.setsampwidth(2)
++            file.setframerate(24000)
++            file.writeframes(b'\0\0' * 100)
++        return buffer.getvalue()
++
++
++class VoiceHTTPTests(unittest.TestCase):
++    def setUp(self):
++        self.designer = FakeDesigner()
++        self.server = ThreadingHTTPServer(('127.0.0.1', 0), make_handler(self.designer))
++        self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
++        self.thread.start()
++        self.url = f'http://127.0.0.1:{self.server.server_port}'
++
++    def tearDown(self):
++        self.server.shutdown()
++        self.thread.join()
++        self.server.server_close()
++
++    def post(self, path, data, headers=None):
++        request = urllib.request.Request(self.url + path, data=json.dumps(data).encode(),
++                    headers={'Content-Type': 'application/json', **(headers or {})})
++        return urllib.request.urlopen(request, timeout=5)
++
++    def test_character_and_language_reach_shared_generator_and_playback(self):
++        with patch('whisperflow.windows_qwen.play_local', return_value={'playing': True}) as play:
++            for character, languages in (('jarvis', ('ko','en')), ('deckard', ('ko',))):
++                for language in languages:
++                    with self.post('/speak', {'text': 'Ready.', 'character': character,
++                            'voice': 'clone:' + character, 'language': language, 'speed': 1.1}) as response:
++                        self.assertTrue(json.load(response)['playing'])
++                    self.assertEqual(self.designer.requests[-1]['language'], language)
++                    self.assertEqual(self.designer.requests[-1]['voice'], 'clone:' + character)
++            self.assertEqual(play.call_count, 3)
++
++    def test_cross_site_request_is_rejected_without_generating_audio(self):
++        with self.assertRaises(urllib.error.HTTPError) as error:
++            self.post('/speak', {'text': 'Do not play'}, {'Origin': 'https://untrusted.example'})
++        self.assertEqual(error.exception.code, 403)
++        self.assertEqual(self.designer.requests, [])
++
++    def test_generate_returns_wav_for_browser_playback(self):
++        with self.post('/generate', {'text': 'Ready.'}) as response:
++            self.assertEqual(response.headers['Content-Type'], 'audio/wav')
++            self.assertEqual(response.read()[:4], b'RIFF')
+diff --git a/tests/test_windows.py b/tests/test_windows.py
+new file mode 100644
+index 0000000..4e43385
+--- /dev/null
++++ b/tests/test_windows.py
+@@ -0,0 +1,141 @@
++import asyncio
++import io
++import json
++from pathlib import Path
++import tempfile
++import unittest
++import urllib.request
++import wave
++
++from websockets.asyncio.client import connect
++from websockets.asyncio.server import serve
++
++from whisperflow.windows import WindowsBridge, validate_options, PROFILES
++from whisperflow.windows_ui import render_windows_ui
++
++
++def wav():
++    out = io.BytesIO()
++    with wave.open(out, 'wb') as f:
++        f.setnchannels(1)
++        f.setsampwidth(2)
++        f.setframerate(24000)
++        f.writeframes(b'\0\0' * 240)
++    return out.getvalue()
++
++
++class BridgeTests(unittest.IsolatedAsyncioTestCase):
++    async def asyncSetUp(self):
++        self.directory = tempfile.TemporaryDirectory()
++        self.requests = []
++
++        async def answer(messages, text, language, model, cwd):
++            self.requests.append((messages, text, language, model))
++            return '준비됐습니다.' if language == 'ko' else 'Ready, sir.'
++
++        self.bridge = WindowsBridge(self.directory.name, answer_provider=answer,
++                                     tts_provider=lambda text, opts: wav())
++        self.server = await serve(self.bridge.handler, '127.0.0.1', 0,
++                                  process_request=self.bridge.http)
++        self.port = self.server.sockets[0].getsockname()[1]
++        self.ws = await connect(f'ws://127.0.0.1:{self.port}', proxy=None)
++        await self.ws.recv()
++        await self.ws.recv()
++
++    async def asyncTearDown(self):
++        await self.ws.close()
++        self.server.close()
++        await self.server.wait_closed()
++        self.directory.cleanup()
++
++    async def receive_until(self, kind):
++        seen = []
++        for _ in range(15):
++            msg = json.loads(await asyncio.wait_for(self.ws.recv(), 3))
++            seen.append(msg)
++            if msg['type'] == kind:
++                return seen
++        self.fail('Missing ' + kind)
++
++    async def test_language_controls_answer_and_voice_and_persists_history(self):
++        for language in ('en', 'ko'):
++            await self.ws.send(json.dumps({'type': 'chat_input', 'tab_id': 'test',
++                                          'text': 'AI 1.4', 'language': language,
++                                          'engine': 'browser', 'voice': 'default', 'speed': .9}))
++            msgs = await self.receive_until('tts_done')
++            speech = next(m for m in msgs if m['type'] == 'tts_browser')
++            self.assertEqual(speech['language'], language)
++            self.assertEqual(speech['speed'], .9)
++            self.assertEqual(self.requests[-1][2], language)
++            self.assertEqual(self.requests[-1][1], 'AI 1.4')
++        await self.ws.send(json.dumps({'type': 'chat_history_request', 'tab_id': 'test'}))
++        history = (await self.receive_until('chat_history'))[-1]['messages']
++        self.assertEqual(len(history), 4)
++        restored = WindowsBridge(self.directory.name)
++        self.assertEqual(restored.session('test')['messages'], history)
++
++    async def test_qwen_audio_and_errors_do_not_leak_to_other_client(self):
++        async with connect(f'ws://127.0.0.1:{self.port}', proxy=None) as other:
++            await other.recv()
++            await other.recv()
++            await self.ws.send(json.dumps({'type': 'tts_preview', 'language': 'en',
++                                          'engine': 'qwen', 'voice': 'design:en'}))
++            messages = await self.receive_until('tts_done')
++            self.assertTrue(any(m['type'] == 'tts_audio' for m in messages))
++            with self.assertRaises(asyncio.TimeoutError):
++                await asyncio.wait_for(other.recv(), .1)
++
++    async def test_qwen_failure_is_reported_before_fallback(self):
++        def fail(*args):
++            raise RuntimeError('test server offline')
++        self.bridge.tts = fail
++        await self.ws.send(json.dumps({'type': 'tts_preview', 'language': 'ko', 'engine': 'qwen'}))
++        msgs = await self.receive_until('tts_done')
++        self.assertIn('voice_warning', [m['type'] for m in msgs])
++        self.assertIn('tts_browser', [m['type'] for m in msgs])
++
++    async def test_invalid_language_and_non_object_message_are_recoverable(self):
++        for message in ('[]', '{bad json', json.dumps({'type': 'tts_preview', 'language': 'xx'})):
++            await self.ws.send(message)
++            self.assertEqual((await self.receive_until('chat_error'))[-1]['type'], 'chat_error')
++        await self.ws.send(json.dumps({'type': 'tts_preview', 'language': 'en'}))
++        await self.receive_until('tts_done')
++
++    async def test_static_serves_adapted_page_and_status(self):
++        def fetch(path):
++            with urllib.request.urlopen(f'http://127.0.0.1:{self.port}' + path) as result:
++                return result.read().decode('utf-8')
++        page = await asyncio.to_thread(fetch, '/')
++        self.assertIn('/windows-language.js', page)
++        self.assertIn('...window.JarvisLanguage.options()', page)
++        self.assertNotIn("recognition.lang = 'ko-KR'", page)
++        status = json.loads(await asyncio.to_thread(fetch, '/api/status'))
++        self.assertEqual(status['languages'], ['ko', 'en'])
++
++    async def test_busy_request_does_not_corrupt_first_reply(self):
++        async def slow(*args):
++            await asyncio.sleep(.1)
++            return 'Ready.'
++        self.bridge.answer = slow
++        request = json.dumps({'type': 'chat_input', 'text': 'hello', 'language': 'en'})
++        await self.ws.send(request)
++        await self.ws.send(request)
++        self.assertIn('wait', (await self.receive_until('chat_error'))[-1]['error'])
++        await self.receive_until('tts_done')
++
++
++class ProfileTests(unittest.TestCase):
++    def test_original_english_voice_and_speed_remain_defaults(self):
++        opts = validate_options({'language': 'en'})
++        self.assertEqual(opts['voice'], PROFILES['en']['voice'])
++        self.assertEqual(opts['language'], 'English')
++        self.assertEqual(opts['speed'], PROFILES['en']['speed'])
++
++    def test_invalid_speed_rejected(self):
++        for speed in (0, 9, float('nan')):
++            with self.assertRaises(ValueError):
++                validate_options({'speed': speed})
++
++
++if __name__ == '__main__':
++    unittest.main()
+diff --git a/whisperflow/jarvis_mcp.py b/whisperflow/jarvis_mcp.py
+new file mode 100644
+index 0000000..54137f1
+--- /dev/null
++++ b/whisperflow/jarvis_mcp.py
+@@ -0,0 +1,104 @@
++"""Shared voice tools for existing GPT/Codex and Claude MCP hosts.
++
++This server does not start a second LLM or need an OpenAI API key. The host
++assistant supplies text; the single local Qwen service generates and plays it.
++"""
++import json
++import os
++from typing import Literal
++import urllib.request
++import urllib.error
++from pathlib import Path
++import subprocess
++import sys
++import time
++from urllib.parse import urlparse
++
++from mcp.server.fastmcp import FastMCP
++
++mcp = FastMCP('Jarvis Shared Voice', host='127.0.0.1', port=8768)
++SERVICE_URL = os.getenv('QWEN_TTS_URL', 'http://127.0.0.1:9093').rstrip('/')
++
++
++def ensure_local_service():
++    try:
++        request_service('/health', timeout=2)
++        return
++    except urllib.error.URLError:
++        pass
++    parsed = urlparse(SERVICE_URL)
++    if parsed.hostname not in ('127.0.0.1','localhost') or parsed.port != 9093:
++        raise RuntimeError('Start the configured voice server first.')
++    root = Path(__file__).resolve().parents[1]
++    data = root/'.windows-data'
++    data.mkdir(exist_ok=True)
++    # Both AI hosts converge on the same loopback port; a second launch exits
++    # harmlessly if another client has already started the service.
++    with (data/'service.log').open('ab') as log:
++        subprocess.Popen([sys.executable, str(root/'launch_qwen_windows.py')], cwd=str(root),
++                         stdin=subprocess.DEVNULL, stdout=log, stderr=log,
++                         **({'creationflags': subprocess.CREATE_NO_WINDOW} if os.name == 'nt' else {}))
++    for _ in range(20):
++        time.sleep(.5)
++        try:
++            request_service('/health', timeout=1)
++            return
++        except urllib.error.URLError:
++            continue
++    raise RuntimeError('The local voice service did not start. Check its local service.log.')
++
++
++def request_service(path, data=None, timeout=300):
++    payload = json.dumps(data).encode('utf-8') if data is not None else None
++    request = urllib.request.Request(SERVICE_URL + path, data=payload,
++                                      headers={'Content-Type': 'application/json'})
++    with urllib.request.urlopen(request, timeout=timeout) as response:
++        return json.load(response)
++
++
++@mcp.tool()
++def jarvis_status() -> dict:
++    """Check the local voice service and installed Jarvis/Deckard references."""
++    try:
++        return request_service('/health', timeout=3)
++    except Exception:
++        return {'ready': False, 'message': 'Start the local Qwen voice service first.'}
++
++
++@mcp.tool()
++def jarvis_speak(text: str, language: Literal['ko', 'en'] = 'ko',
++                 character: Literal['jarvis', 'deckard'] = 'jarvis', speed: float = 1.0,
++                 robot_effect: Literal['default', 'none', 'soft', 'strong'] = 'default') -> dict:
++    """Speak your reply aloud on the user's PC in Korean or English.
++
++    Jarvis supports Korean and English. The K-Cops robot police character
++    Deckard supports Korean only (not Deckard Cain).
++    Call when the user asks for speech. This tool only synthesizes speech;
++    it does not execute operating-system commands or grant other tools access.
++    A matching local reference recording must be installed for cloned voices.
++    """
++    if not text.strip() or len(text) > 2000:
++        raise ValueError('Text must contain 1–2000 characters.')
++    if character == 'deckard' and language != 'ko':
++        raise ValueError('Deckard is Korean only. Choose Jarvis for English.')
++    if not .5 <= speed <= 2:
++        raise ValueError('Speed must be between 0.5 and 2.')
++    ensure_local_service()
++    effect = ('soft' if character == 'deckard' else 'none') if robot_effect == 'default' else robot_effect
++    return request_service('/speak', {'text': text, 'language': language, 'robot_effect': effect,
++                           'character': character, 'voice': 'clone:' + character,
++                           'speed': speed})
++
++
++@mcp.tool()
++def jarvis_stop() -> dict:
++    """Stop local voice playback. A model generation already running may still finish."""
++    return request_service('/stop', {}, timeout=3)
++
++
++if __name__ == '__main__':
++    import argparse
++    parser = argparse.ArgumentParser()
++    parser.add_argument('--http', action='store_true', help='Loopback-only Streamable HTTP transport')
++    args = parser.parse_args()
++    mcp.run(transport='streamable-http' if args.http else 'stdio')
+diff --git a/whisperflow/native_qwen.py b/whisperflow/native_qwen.py
+new file mode 100644
+index 0000000..e2ecb0e
+--- /dev/null
++++ b/whisperflow/native_qwen.py
+@@ -0,0 +1,45 @@
++"""Small-process Qwen GGUF backend, using an official llama.cpp Windows build."""
++import os
++from pathlib import Path
++import subprocess
++import tempfile
++
++ROOT = Path(__file__).resolve().parents[1]
++
++
++def paths():
++    runtime = Path(os.getenv('JARVIS_NATIVE_DIR', ROOT / '.native/llama'))
++    models = Path(os.getenv('JARVIS_NATIVE_MODEL_DIR', ROOT / '.models/gguf'))
++    return runtime / 'llama-tts.exe', models / 'tts-q4.gguf', models / 'codec-q8.gguf'
++
++
++def available():
++    return all(path.is_file() for path in paths())
++
++
++def generate(text, reference, language, seed=42):
++    executable, model, codec = paths()
++    if not available():
++        raise RuntimeError('Run Setup-Native-Qwen.cmd first.')
++    parent = ROOT / '.windows-data/tmp'
++    parent.mkdir(parents=True, exist_ok=True)
++    with tempfile.TemporaryDirectory(dir=parent) as temporary:
++        output = Path(temporary) / 'speech.wav'
++        # The native TTS file readers do not reliably handle absolute non-ASCII
++        # Windows paths. Relative paths keep Unicode home names out of those readers.
++        def relative(path):
++            try:
++                return os.path.relpath(path, ROOT)
++            except ValueError:
++                return str(path)
++        command = [str(executable), '-m', relative(model), '--mmproj', relative(codec),
++                   '-p', text, '--tts-lang', language, '--tts-speaker-file', relative(reference),
++                   '--output', relative(output), '-ngl', '0', '-t', '4',
++                   '-n', str(min(1024, max(96, len(text) * 6))),
++                   '--seed', str(seed), '--repeat-penalty', '1.05']
++        result = subprocess.run(command, cwd=str(ROOT), capture_output=True, timeout=300,
++                                **({'creationflags': subprocess.CREATE_NO_WINDOW} if os.name == 'nt' else {}))
++        if result.returncode or not output.is_file():
++            (parent.parent/'native-error.log').write_bytes(result.stderr)
++            raise RuntimeError('Local Qwen synthesis failed. Check the runtime and model files.')
++        return output.read_bytes()
+diff --git a/whisperflow/static/windows-language.js b/whisperflow/static/windows-language.js
+new file mode 100644
+index 0000000..7f806cd
+--- /dev/null
++++ b/whisperflow/static/windows-language.js
+@@ -0,0 +1,210 @@
++/* Loaded only by the Windows bridge. Original macOS pages stay unchanged. */
++(() => {
++  'use strict';
++  const KEY = 'jarvis_windows_voice_v1';
++  const defaults = {
++    language: 'ko', character: 'jarvis', provider: 'claude', gptModel: 'gpt-5-mini',
++    ko: {engine: 'browser', voice: 'clone:jarvis', browserVoice: '', speed: 1.0},
++    en: {engine: 'browser', voice: 'clone:jarvis', browserVoice: '', speed: 1.4}
++  };
++  let settings;
++  try {
++    const saved = JSON.parse(localStorage.getItem(KEY) || '{}');
++    settings = {...defaults, ...saved,
++      ko: {...defaults.ko, ...saved.ko}, en: {...defaults.en, ...saved.en}};
++  } catch (_) { settings = structuredClone(defaults); }
++  if (!['ko', 'en'].includes(settings.language)) settings.language = 'ko';
++  if (!['jarvis', 'deckard'].includes(settings.character)) settings.character = 'jarvis';
++  settings.characters = settings.characters || {};
++  settings.characters.jarvis = settings.characters.jarvis || {ko: settings.ko, en: settings.en};
++  settings.characters.deckard = settings.characters.deckard || {
++    ko: {...defaults.ko, voice: 'clone:deckard'},
++    en: {...defaults.en, voice: 'clone:deckard', speed: 1.0}
++  };
++  if (settings.characters.jarvis.ko.voice === 'design:ko' && !settings.referenceProfiles) {
++    settings.characters.jarvis.ko.voice = 'clone:jarvis';
++  }
++  settings.referenceProfiles = true;
++  if (settings.character === 'deckard') settings.language = 'ko';
++  let socket, recognition, panel, serverStatus;
++  const profile = () => settings.characters[settings.character][settings.language];
++  const locale = () => settings.language === 'ko' ? 'ko-KR' : 'en-GB';
++  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(settings)); } catch (_) {} };
++  const el = id => document.getElementById(id);
++  const notify = text => { if (el('voiceNote')) el('voiceNote').textContent = text; };
++  const options = () => ({language: settings.language, engine: profile().engine,
++    character: settings.character,
++    robot_effect: profile().robotEffect || (settings.character === 'deckard' ? 'soft' : 'none'),
++    provider: settings.provider, gpt_model: settings.gptModel,
++    voice: profile().engine === 'browser' ? (profile().browserVoice || 'default') : profile().voice,
++    speed: Number(profile().speed)});
++  function send(value) {
++    if (!socket || socket.readyState !== WebSocket.OPEN) {
++      notify('서버 연결을 기다려주세요 / Waiting for connection.'); return false;
++    }
++    socket.send(JSON.stringify(value)); return true;
++  }
++  function voiceList() {
++    if (!el('browserVoice')) return;
++    const select = el('browserVoice');
++    select.replaceChildren();
++    const auto = document.createElement('option'); auto.value = ''; auto.textContent = '기본 음성 / Default';
++    select.append(auto);
++    for (const voice of (window.speechSynthesis?.getVoices() || [])) {
++      if (!voice.lang.toLowerCase().startsWith(settings.language)) continue;
++      const option = document.createElement('option');
++      option.value = voice.voiceURI; option.textContent = `${voice.name} (${voice.lang})`;
++      select.append(option);
++    }
++    select.value = profile().browserVoice;
++    if (select.selectedIndex < 0) select.value = '';
++  }
++  function update() {
++    if (!panel) return;
++    el('voiceLanguage').value = settings.language;
++    el('voiceLanguage').querySelector('option[value="en"]').disabled = settings.character === 'deckard';
++    el('voiceCharacter').value = settings.character;
++    el('answerProvider').value = settings.provider;
++    el('gptModel').value = settings.gptModel;
++    el('gptModelRow').hidden = settings.provider !== 'openai';
++    el('voiceEngine').value = profile().engine;
++    el('robotEffect').value = profile().robotEffect || (settings.character === 'deckard' ? 'soft' : 'none');
++    el('robotRow').hidden = profile().engine !== 'qwen';
++    el('qwenVoice').value = profile().voice;
++    el('voiceSpeed').value = profile().speed;
++    el('voiceSpeedLabel').textContent = Number(profile().speed).toFixed(2) + '×';
++    el('qwenRow').hidden = profile().engine !== 'qwen';
++    el('browserRow').hidden = profile().engine !== 'browser';
++    document.documentElement.lang = settings.language;
++    voiceList();
++    const langDisplay = el('valLang'); if (langDisplay) langDisplay.textContent = settings.language.toUpperCase();
++    if (el('windowsEngine')) el('windowsEngine').textContent = profile().engine.toUpperCase();
++    if (el('windowsSpeed')) el('windowsSpeed').textContent = Number(profile().speed).toFixed(2) + 'x';
++    notify(profile().engine === 'browser'
++      ? '기본 음성 미리듣기 · 원하는 남성 음색은 Qwen에서 제작합니다.'
++      : 'Qwen 서버 연결 필요 · 기존 영어 음성 ID 또는 design:en 사용');
++    updateConnection();
++  }
++  function updateConnection() {
++    if (!serverStatus || !el('voiceConnection')) return;
++    const isGPT = settings.provider === 'openai';
++    const available = isGPT ? serverStatus.openai : serverStatus.claude;
++    el('voiceConnection').textContent = available
++      ? (isGPT ? 'GPT 키 설정 감지됨 · API 사용 시 요금이 발생할 수 있습니다.' : 'Claude 실행 파일 감지됨 · 계정 로그인 필요')
++      : (isGPT ? 'GPT API 키 설정 필요 · 음성 미리듣기는 사용 가능' : 'Claude Code 연결 필요 · 음성 미리듣기는 사용 가능');
++    if (el('valModel')) el('valModel').textContent = available ? (isGPT ? 'GPT' : 'CLAUDE') : 'NOT CONNECTED';
++  }
++  function state(value) { if (typeof setUIState === 'function') setUIState(value); }
++  function browserSpeak(msg) {
++    if (!window.speechSynthesis) { notify('이 브라우저는 음성 재생을 지원하지 않습니다.'); state('idle'); return; }
++    const synth = window.speechSynthesis;
++    synth.cancel();
++    const voices = synth.getVoices().filter(v => v.lang.toLowerCase().startsWith(msg.language));
++    const utterance = new SpeechSynthesisUtterance(msg.text);
++    const voice = voices.find(v => v.voiceURI === msg.voice) || voices[0];
++    if (voice) utterance.voice = voice;
++    utterance.lang = msg.language === 'ko' ? 'ko-KR' : 'en-GB';
++    utterance.rate = msg.speed || 1;
++    utterance.onstart = () => state('tts_playing');
++    utterance.onend = () => state('idle');
++    utterance.onerror = event => {
++      if (!['canceled', 'interrupted'].includes(event.error)) notify('음성 재생 실패: ' + event.error);
++      state('idle');
++    };
++    if (!voices.length) notify('해당 언어의 시스템 음성이 없을 수 있습니다. Qwen 연결 또는 음성 설치가 필요합니다.');
++    // Retain a reference while speech is in progress (Chromium garbage collection).
++    window.JarvisLanguage.utterance = utterance;
++    synth.speak(utterance);
++  }
++  window.JarvisLanguage = {
++    language: () => settings.language, locale, options,
++    setRecognition: value => { recognition = value; },
++    bind: value => { socket = value; },
++    receive(msg) {
++      if (msg.type === 'windows_status') {
++        serverStatus = msg;
++        updateConnection();
++      }
++      if (msg.type === 'tts_browser') browserSpeak(msg);
++      if (msg.type === 'voice_warning') {
++        notify(msg.error + ' · 시스템 기본 음성으로 전환합니다.');
++        if (el('windowsEngine')) el('windowsEngine').textContent = 'SYSTEM (FALLBACK)';
++      }
++      if (msg.type === 'tts_audio' && typeof getTtsAudioEl === 'function') {
++        getTtsAudioEl().playbackRate = msg.speed || 1;
++      }
++    }
++  };
++  document.addEventListener('DOMContentLoaded', () => {
++    const style = document.createElement('style');
++    style.textContent = `#windowsVoice{position:fixed;top:14px;right:14px;z-index:99999;width:310px;
++      background:rgba(4,17,29,.97);border:1px solid #22748a;border-radius:12px;padding:12px;
++      color:#cef4ff;font:13px/1.5 system-ui;box-shadow:0 8px 32px #0008}
++      #windowsVoice summary{cursor:pointer;font-weight:600;letter-spacing:.03em}
++      #windowsVoice label{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:9px}
++      #windowsVoice input,#windowsVoice select{max-width:190px;background:#0d2436;color:#e5f8ff;
++      border:1px solid #28536a;border-radius:5px;padding:5px;font:inherit}
++      #windowsVoice [hidden]{display:none!important} #windowsVoice small{display:block;color:#98baca;margin-top:8px}
++      #windowsVoice button{background:#123d50;color:#baf4ff;border:1px solid #368ca3;
++      padding:7px 12px;border-radius:6px;margin:10px 5px 0 0;cursor:pointer}
++      @media(max-width:600px){#windowsVoice{top:8px;right:8px;width:min(310px,calc(100vw - 40px))}}`;
++    document.head.append(style);
++    panel = document.createElement('details'); panel.id = 'windowsVoice'; panel.open = true;
++    panel.innerHTML = `<summary>음성 설정 · Voice</summary>
++      <label>캐릭터 / Character<select id="voiceCharacter"><option value="jarvis">자비스 / JARVIS</option><option value="deckard">케이캅스 데커드 / Deckard</option></select></label>
++      <label>언어 / Language<select id="voiceLanguage"><option value="ko">한국어</option><option value="en">English</option></select></label>
++      <label>음성 / Voice<select id="voiceEngine"><option value="browser">시스템 기본 / System</option><option value="qwen">Qwen 맞춤 음성 / Custom</option></select></label>
++      <label id="browserRow">목소리<select id="browserVoice"></select></label>
++      <label id="qwenRow">음성 ID<input id="qwenVoice" maxlength="80" aria-label="Qwen voice ID"></label>
++      <label id="robotRow">로봇 효과<select id="robotEffect"><option value="none">없음 / None</option><option value="soft">약하게 / Soft</option><option value="strong">강하게 / Strong</option></select></label>
++      <label>속도 / Speed <input id="voiceSpeed" type="range" min="0.5" max="2" step="0.05"><span id="voiceSpeedLabel"></span></label>
++      <button id="voicePreview" type="button">미리듣기 / Preview</button><button id="voiceStop" type="button">정지 / Stop</button>
++      <small id="voiceNote" role="status"></small>
++      <details style="margin-top:10px"><summary>독립 채팅 · Optional chat</summary>
++        <label>대화 / Conversation<select id="answerProvider"><option value="claude">Claude Code</option><option value="openai">GPT (OpenAI API)</option></select></label>
++        <label id="gptModelRow">GPT 모델<input id="gptModel" maxlength="100" aria-label="GPT model ID"></label>
++        <small id="voiceConnection">서버 연결 중 / Connecting…</small>
++      </details>`;
++    document.body.append(panel);
++    el('voiceCharacter').onchange = event => {
++      window.dispatchEvent(new Event('jarvis-language-change'));
++      send({type:'tts_interrupt'});
++      settings.character = event.target.value;
++      if (settings.character === 'deckard') settings.language = 'ko';
++      save(); update();
++    };
++    el('answerProvider').onchange = event => { settings.provider = event.target.value; save(); update(); };
++    el('gptModel').onchange = event => {
++      settings.gptModel = event.target.value.trim() || defaults.gptModel; save(); update();
++    };
++    el('voiceLanguage').onchange = event => {
++      if (window.speechSynthesis) window.speechSynthesis.cancel();
++      window.dispatchEvent(new Event('jarvis-language-change'));
++      settings.language = event.target.value;
++      if (recognition) { try { recognition.abort(); } catch (_) {} recognition = null; }
++      send({type: 'tts_interrupt'}); save(); update();
++    };
++    el('voiceEngine').onchange = event => { profile().engine = event.target.value; save(); update(); };
++    el('robotEffect').onchange = event => { profile().robotEffect = event.target.value; save(); };
++    el('browserVoice').onchange = event => { profile().browserVoice = event.target.value; save(); };
++    el('qwenVoice').onchange = event => { profile().voice = event.target.value.trim() || defaults[settings.language].voice; save(); };
++    el('voiceSpeed').oninput = event => {
++      profile().speed = Number(event.target.value); save();
++      el('voiceSpeedLabel').textContent = profile().speed.toFixed(2) + '×';
++      if (el('windowsSpeed')) el('windowsSpeed').textContent = profile().speed.toFixed(2) + 'x';
++    };
++    el('voicePreview').onclick = () => {
++      if (typeof unlockTtsAudio === 'function') unlockTtsAudio();
++      if (typeof stopTtsPlayback === 'function') stopTtsPlayback();
++      send({type: 'tts_preview', ...options()});
++    };
++    el('voiceStop').onclick = () => {
++      if (window.speechSynthesis) window.speechSynthesis.cancel();
++      if (typeof stopTtsPlayback === 'function') stopTtsPlayback();
++      send({type: 'tts_interrupt'}); state('idle');
++    };
++    if (window.speechSynthesis) window.speechSynthesis.addEventListener('voiceschanged', voiceList);
++    update();
++    if (serverStatus) window.JarvisLanguage.receive({type:'windows_status', ...serverStatus});
++  });
++})();
+diff --git a/whisperflow/voice_effects.py b/whisperflow/voice_effects.py
+new file mode 100644
+index 0000000..b3332e8
+--- /dev/null
++++ b/whisperflow/voice_effects.py
+@@ -0,0 +1,37 @@
++"""Conservative robotic coloration, preserving the underlying character voice."""
++import io
++from pathlib import Path
++import subprocess
++import tempfile
++import wave
++
++
++def robot_effect(audio, strength='soft'):
++    if strength == 'none':
++        return audio
++    if strength not in ('soft', 'strong'):
++        raise ValueError('Choose none, soft or strong robot effect.')
++    import numpy as np
++    import imageio_ffmpeg
++    with wave.open(io.BytesIO(audio), 'rb') as source:
++        rate = source.getframerate()
++        if source.getnchannels() != 1 or source.getsampwidth() != 2:
++            raise ValueError('Robot processing expects mono PCM16 WAV.')
++        signal = np.frombuffer(source.readframes(source.getnframes()), dtype='<i2').astype(np.float32) / 32768
++    amount, carrier, delay, gain = (.20, 62, 4.2, .14) if strength == 'soft' else (.38, 82, 5., .22)
++    time = np.arange(len(signal)) / rate
++    signal *= ((1 - amount) + amount * np.cos(2 * np.pi * carrier * time))
++    with tempfile.TemporaryDirectory() as temporary:
++        source, target = Path(temporary) / 'input.wav', Path(temporary) / 'output.wav'
++        with wave.open(str(source), 'wb') as file:
++            file.setnchannels(1)
++            file.setsampwidth(2)
++            file.setframerate(rate)
++            file.writeframes((np.clip(signal, -1, 1) * 32767).astype('<i2').tobytes())
++        filters = (f'highpass=f=110,lowpass=f=7800,equalizer=f=1150:t=q:w=2:g=2.5,'
++                   f'aecho=0.8:0.88:{delay}|{delay*2}:{gain}|{gain/2},'
++                   'acompressor=threshold=0.16:ratio=2:attack=5:release=70:makeup=1.3,alimiter=limit=0.92')
++        subprocess.run([imageio_ffmpeg.get_ffmpeg_exe(), '-v', 'error', '-i', str(source),
++                        '-af', filters, '-ac', '1', '-ar', str(rate), '-y', str(target)],
++                       check=True, capture_output=True, timeout=30)
++        return target.read_bytes()
+diff --git a/whisperflow/windows.py b/whisperflow/windows.py
+new file mode 100644
+index 0000000..7ec5877
+--- /dev/null
++++ b/whisperflow/windows.py
+@@ -0,0 +1,342 @@
++"""Local Windows bridge for the original JARVIS browser UI (ko/en).
++
++Run with python -m whisperflow.windows. macOS entry points remain untouched.
++"""
++from __future__ import annotations
++
++import argparse
++import asyncio
++import base64
++import functools
++import json
++import logging
++import mimetypes
++import os
++import re
++from pathlib import Path
++import shutil
++import subprocess
++import urllib.request
++import webbrowser
++
++from websockets.asyncio.server import serve
++from websockets.datastructures import Headers
++from websockets.http11 import Response
++
++from .windows_ui import render_windows_ui
++
++ROOT = Path(__file__).resolve().parents[1]
++STATIC = Path(__file__).parent / 'static'
++log = logging.getLogger(__name__)
++
++PROFILES = {
++    'ko': {'language': 'Korean', 'voice': 'design:ko', 'speed': 1.0,
++           'instruct': 'Native standard Korean. Adult male, smooth medium-low register. '
++           'Calm, intelligent, composed personal assistant. Clear diction, restrained intonation, '
++           'subtle dry wit, polite conversational delivery. No exaggerated bass or robotic filter.'},
++    'en': {'language': 'English', 'voice': os.getenv('JARVIS_TTS_VOICE', 'clone:jarvis'),
++           'speed': float(os.getenv('JARVIS_TTS_SPEED', '1.4')),
++           'instruct': 'Calm and warm narration tone, speaking at a steady moderate pace'},
++}
++
++CHARACTERS = {
++    'jarvis': 'Calm, refined, intelligent personal assistant. Smooth medium-low male voice, '
++              'clear diction, restrained intonation and understated dry wit.',
++    'deckard': 'Heroic adult male robot police officer. Solid resonant medium-low voice, '
++               'clear decisive diction, brave and sincere delivery. Controlled metallic texture, '
++               'energetic without shouting. A new character-style voice, not a verified actor replica.',
++}
++
++
++def validate_options(data):
++    language = data.get('language', 'ko')
++    if language not in PROFILES:
++        raise ValueError('Choose Korean or English.')
++    profile = {**PROFILES[language], 'code': language}
++    character = data.get('character', 'jarvis')
++    if character not in CHARACTERS:
++        raise ValueError('Choose Jarvis or Deckard.')
++    if character == 'deckard' and language != 'ko':
++        raise ValueError('Deckard is Korean only. Choose Jarvis for English.')
++    profile['instruct'] = 'Native ' + profile['language'] + '. ' + CHARACTERS[character]
++    voice = data.get('voice', profile['voice'])
++    if not isinstance(voice, str) or not 1 <= len(voice) <= 80:
++        raise ValueError('Invalid voice ID.')
++    speed = float(data.get('speed', profile['speed']))
++    if not .5 <= speed <= 2.0:
++        raise ValueError('Speed must be between 0.5 and 2.0.')
++    engine = data.get('engine', 'browser')
++    if engine not in ('browser', 'qwen'):
++        raise ValueError('Invalid voice engine.')
++    effect = data.get('robot_effect', 'soft' if character == 'deckard' else 'none')
++    if effect not in ('none','soft','strong'):
++        raise ValueError('Invalid robot effect.')
++    return {**profile, 'character': character, 'robot_effect': effect, 'voice': voice, 'speed': speed, 'engine': engine}
++
++
++def claude_command():
++    """Use a native executable or Node entry point; never shell-interpolate prompts."""
++    explicit = os.getenv('JARVIS_CLAUDE_PATH')
++    candidate = explicit or shutil.which('claude')
++    if not candidate:
++        return None
++    path = Path(candidate)
++    if path.suffix.lower() in ('.cmd', '.bat', '.ps1'):
++        entry = path.parent / 'node_modules/@anthropic-ai/claude-code/cli.js'
++        node = shutil.which('node')
++        return [node, str(entry)] if node and entry.is_file() else None
++    return [str(path)]
++
++
++async def answer_with_claude(messages, text, language, model, cwd):
++    command = claude_command()
++    if not command:
++        raise RuntimeError('Claude Code is not connected. Install/sign in to Claude Code, '
++                           'then restart. Voice preview works without it.')
++    instruction = ('Answer in natural Korean.' if language == 'ko' else 'Answer in natural English.')
++    prompt = json.dumps({'conversation': messages[-16:], 'user': text}, ensure_ascii=False)
++    command += ['--print', '--output-format', 'json', '--tools', '',
++                '--strict-mcp-config', '--mcp-config', '{"mcpServers":{}}',
++                '--disable-slash-commands', '--model', model,
++                '--system-prompt', 'You are a calm, intelligent personal voice assistant. '
++                'Keep replies concise and conversational, with restrained dry wit. ' + instruction]
++    # Pass user content on stdin; Windows command-line length/quoting cannot alter it.
++    proc = await asyncio.create_subprocess_exec(
++        *command, stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE,
++        stderr=asyncio.subprocess.PIPE, cwd=str(cwd),
++        **({'creationflags': subprocess.CREATE_NO_WINDOW} if os.name == 'nt' else {}))
++    try:
++        stdout, stderr = await asyncio.wait_for(proc.communicate(prompt.encode('utf-8')), 180)
++    except (asyncio.TimeoutError, asyncio.CancelledError):
++        if proc.returncode is None:
++            proc.kill()
++        await proc.communicate()
++        raise
++    if proc.returncode:
++        raise RuntimeError(stderr.decode('utf-8', 'replace').strip()[:1000] or 'Claude request failed.')
++    result = json.loads(stdout.decode('utf-8'))
++    if result.get('is_error'):
++        raise RuntimeError(result.get('result', 'Claude request failed.'))
++    answer = result.get('result', '')
++    if not answer:
++        raise RuntimeError('Claude returned an empty reply.')
++    return answer
++
++
++def generate_qwen(text, options, url):
++    payload = json.dumps({'text': text, 'voice': options['voice'], 'seed': 42,
++                          'character': options['character'],
++                          'robot_effect': options['robot_effect'],
++                          'language': options['language'],
++                          'instruct': options['instruct']}).encode('utf-8')
++    req = urllib.request.Request(url + '/generate', data=payload,
++                                 headers={'Content-Type': 'application/json'})
++    with urllib.request.urlopen(req, timeout=300) as response:
++        audio = response.read()
++    if audio[:4] != b'RIFF' or audio[8:12] != b'WAVE':
++        raise RuntimeError('TTS server did not return a WAV file.')
++    return audio
++
++
++class WindowsBridge:
++    def __init__(self, data_dir=None, answer_provider=None, tts_provider=None):
++        self.data_dir = Path(data_dir or os.getenv('JARVIS_DATA_DIR', ROOT / '.windows-data'))
++        self.data_dir.mkdir(parents=True, exist_ok=True)
++        self.history_path = self.data_dir / 'conversations.json'
++        self.sessions = {}
++        if self.history_path.exists():
++            self.sessions = json.loads(self.history_path.read_text(encoding='utf-8'))
++        self.answer = answer_provider or answer_with_claude
++        self.tts = tts_provider or functools.partial(
++            generate_qwen, url=os.getenv('QWEN_TTS_URL', 'http://127.0.0.1:9093').rstrip('/'))
++        self.tasks = {}
++        self.voice_tasks = {}
++
++    def save(self):
++        temporary = self.history_path.with_suffix('.tmp')
++        temporary.write_text(json.dumps(self.sessions, ensure_ascii=False, indent=2), encoding='utf-8')
++        temporary.replace(self.history_path)
++
++    def session(self, tab):
++        return self.sessions.setdefault(tab, {'name': tab, 'model': 'haiku', 'messages': []})
++
++    async def send(self, ws, kind, **data):
++        await ws.send(json.dumps({'type': kind, **data}, ensure_ascii=False))
++
++    def status(self):
++        return {'claude': bool(claude_command()), 'languages': ['ko', 'en'],
++                'openai': bool(os.environ.get('OPENAI_API_KEY')),
++                'gpt_model': os.environ.get('JARVIS_GPT_MODEL', 'gpt-5-mini'),
++                'profiles': PROFILES, 'tts': 'browser', 'platform': 'windows'}
++
++    async def http(self, connection, request):
++        if request.headers.get('Upgrade', '').lower() == 'websocket':
++            return None
++        path = request.path.split('?', 1)[0]
++        if path == '/api/status':
++            body = json.dumps(self.status()).encode('utf-8')
++            mime = 'application/json'
++        else:
++            # In the Windows entry point both desktop and assistant routes use the working voice UI.
++            path = '/jarvis.html' if path in ('/', '/assistant.html') else path
++            file = (STATIC / path.lstrip('/')).resolve()
++            if not file.is_relative_to(STATIC.resolve()) or not file.is_file():
++                return connection.respond(404, 'Not found')
++            if file.name == 'jarvis.html':
++                body = render_windows_ui(file.read_text(encoding='utf-8')).encode('utf-8')
++                mime = 'text/html; charset=utf-8'
++            else:
++                body = file.read_bytes()
++                mime = mimetypes.guess_type(file.name)[0] or 'application/octet-stream'
++        return Response(200, 'OK', Headers({'Content-Type': mime,
++                        'Content-Length': str(len(body)), 'Cache-Control': 'no-store'}), body)
++
++    async def speak(self, ws, text, options):
++        await self.send(ws, 'state', value='tts_playing')
++        try:
++            if options['engine'] == 'browser':
++                await self.send(ws, 'tts_browser', text=text, language=options['code'],
++                                speed=options['speed'], voice=options['voice'])
++            else:
++                audio = await asyncio.to_thread(self.tts, text[:2000], options)
++                await self.send(ws, 'tts_audio', value=base64.b64encode(audio).decode('ascii'),
++                                speed=options['speed'])
++        except Exception as exc:
++            # Explicit fallback, so a system voice is never presented as a custom Qwen voice.
++            await self.send(ws, 'voice_warning', error='Qwen unavailable: ' + str(exc)[:300])
++            await self.send(ws, 'tts_browser', text=text, language=options['code'],
++                            speed=options['speed'], voice='')
++        finally:
++            await self.send(ws, 'tts_done')
++
++    async def chat(self, ws, data):
++        tab = data.get('tab_id', 'main_assistant')
++        try:
++            options = validate_options(data)
++            text = data.get('text', '').strip()
++            if not text or len(text) > 12000:
++                raise ValueError('Enter a message (maximum 12,000 characters).')
++            session = self.session(tab)
++            provider = data.get('provider', 'claude')
++            if provider not in ('claude', 'openai'):
++                raise ValueError('Choose GPT or Claude.')
++            answer_function, model = self.answer, session['model']
++            if provider == 'openai':
++                from .windows_openai import answer_with_gpt
++                answer_function = answer_with_gpt
++                model = data.get('gpt_model') or os.environ.get('JARVIS_GPT_MODEL', 'gpt-5-mini')
++                if not isinstance(model, str) or not re.fullmatch(r'[A-Za-z0-9._:-]{1,100}', model):
++                    raise ValueError('Invalid GPT model ID.')
++            answer = await answer_function(list(session['messages']), text, options['code'],
++                                           model, self.data_dir)
++            session['messages'] += [{'role': 'user', 'content': text},
++                                    {'role': 'assistant', 'content': answer}]
++            session['messages'] = session['messages'][-200:]
++            self.save()
++            await self.send(ws, 'chat_chunk', tab_id=tab, content=answer, chunk_type='assistant')
++            await self.send(ws, 'chat_done', tab_id=tab)
++            self.start_voice(ws, answer, options)
++        except Exception as exc:
++            log.warning('Chat failed: %s', type(exc).__name__)
++            await self.send(ws, 'chat_error', tab_id=tab, error=str(exc))
++            await self.send(ws, 'state', value='idle')
++
++    def start_voice(self, ws, text, options):
++        task = self.voice_tasks.get(ws)
++        if task and not task.done():
++            task.cancel()
++        self.voice_tasks[ws] = asyncio.create_task(self.speak(ws, text, options))
++
++    async def handler(self, ws):
++        await self.send(ws, 'windows_status', **self.status())
++        await self.send(ws, 'state', value='idle')
++        try:
++            async for raw in ws:
++                data = {}
++                try:
++                    data = json.loads(raw)
++                    if not isinstance(data, dict):
++                        raise ValueError('Expected a message object.')
++                    kind = data.get('type')
++                    tab = data.get('tab_id', 'main_assistant')
++                    if not isinstance(tab, str) or len(tab) > 100:
++                        raise ValueError('Invalid session.')
++                    if kind == 'chat_input':
++                        if ws in self.tasks and not self.tasks[ws].done():
++                            raise ValueError('Please wait for the current response.')
++                        self.tasks[ws] = asyncio.create_task(self.chat(ws, data))
++                    elif kind == 'tts_preview':
++                        opts = validate_options(data)
++                        text = ('시스템 점검을 마쳤습니다. 모든 기능이 정상입니다. 다만, 이번 계획은 조금 무모하군요.'
++                                if opts['code'] == 'ko' else
++                                'System checks are complete. Everything is operating normally. '
++                                'Although, I must say, this plan is rather ambitious.')
++                        self.start_voice(ws, text, opts)
++                    elif kind == 'tts_interrupt':
++                        task = self.voice_tasks.get(ws)
++                        if task:
++                            task.cancel()
++                        await self.send(ws, 'state', value='idle')
++                    elif kind == 'chat_history_request':
++                        await self.send(ws, 'chat_history', tab_id=tab,
++                                        messages=self.session(tab)['messages'])
++                    elif kind == 'session_list':
++                        await self.send(ws, 'session_list', sessions=[
++                            {'tab_id': key, **{k: v for k, v in val.items() if k != 'messages'}}
++                            for key, val in self.sessions.items()])
++                    elif kind == 'session_create':
++                        session = self.session(tab)
++                        session['name'] = str(data.get('name', tab))[:100]
++                        self.save()
++                        await self.send(ws, 'session_created', tab_id=tab, session=session)
++                    elif kind == 'session_model_change':
++                        model = data.get('model', 'haiku')
++                        if model not in ('haiku', 'sonnet', 'opus'):
++                            raise ValueError('Invalid model.')
++                        self.session(tab)['model'] = model
++                        self.save()
++                        await self.send(ws, 'model_changed', tab_id=tab, model=model)
++                    elif kind == 'state':
++                        await self.send(ws, 'state', value=data.get('value', 'idle'))
++                    elif kind == 'file_upload':
++                        raise ValueError('File attachments are not enabled in this voice version.')
++                except (ValueError, TypeError, KeyError) as exc:
++                    await self.send(ws, 'chat_error', tab_id=data.get('tab_id', 'main_assistant')
++                                    if isinstance(data, dict) else 'main_assistant', error=str(exc))
++        finally:
++            pending = []
++            for tasks in (self.tasks, self.voice_tasks):
++                task = tasks.pop(ws, None)
++                if task:
++                    task.cancel()
++                    pending.append(task)
++            if pending:
++                await asyncio.gather(*pending, return_exceptions=True)
++
++
++async def run(port=8767, open_browser=False):
++    bridge = WindowsBridge()
++    origins = [f'http://127.0.0.1:{port}', f'http://localhost:{port}']
++    async with serve(bridge.handler, '127.0.0.1', port, process_request=bridge.http,
++                     origins=origins, max_size=100000):
++        url = f'http://127.0.0.1:{port}'
++        print('JARVIS Windows: ' + url, flush=True)
++        if open_browser:
++            webbrowser.open(url)
++        await asyncio.Future()
++
++
++def main():
++    parser = argparse.ArgumentParser()
++    parser.add_argument('--port', type=int, default=8767)
++    parser.add_argument('--open', action='store_true')
++    args = parser.parse_args()
++    logging.basicConfig(level=logging.INFO)
++    try:
++        asyncio.run(run(args.port, args.open))
++    except KeyboardInterrupt:
++        pass
++
++
++if __name__ == '__main__':
++    main()
+diff --git a/whisperflow/windows_openai.py b/whisperflow/windows_openai.py
+new file mode 100644
+index 0000000..1cf03f7
+--- /dev/null
++++ b/whisperflow/windows_openai.py
+@@ -0,0 +1,39 @@
++"""Server-side GPT adapter. API credentials never go to the browser or Git."""
++import asyncio
++import json
++import os
++import urllib.error
++import urllib.request
++
++
++def request_gpt(messages, text, language, model):
++    key = os.environ.get('OPENAI_API_KEY', '').strip()
++    if not key:
++        raise RuntimeError('GPT 연결에는 서버의 OPENAI_API_KEY 설정이 필요합니다. '
++                           '키를 채팅이나 GitHub에 올리지 마세요.')
++    history = [{'role': msg['role'], 'content': msg['content']} for msg in messages[-16:]
++               if msg.get('role') in ('user', 'assistant')]
++    payload = {'model': model, 'store': False, 'max_output_tokens': 2048,
++               'instructions': 'You are a calm, intelligent voice assistant. Keep answers concise. '
++               + ('Answer in natural Korean.' if language == 'ko' else 'Answer in natural English.'),
++               'input': history + [{'role': 'user', 'content': text}]}
++    request = urllib.request.Request('https://api.openai.com/v1/responses',
++        data=json.dumps(payload, ensure_ascii=False).encode('utf-8'),
++        headers={'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json'})
++    try:
++        with urllib.request.urlopen(request, timeout=180) as response:
++            result = json.load(response)
++    except urllib.error.HTTPError as exc:
++        # Do not reflect a remote response body or headers containing account details.
++        raise RuntimeError(f'GPT API request failed (HTTP {exc.code}). Check API access, '
++                           'model availability and billing in your OpenAI account.') from None
++    output = '\n'.join(part['text'] for item in result.get('output', [])
++                       if item.get('type') == 'message'
++                       for part in item.get('content', []) if part.get('type') == 'output_text')
++    if not output:
++        raise RuntimeError('GPT returned no readable text. Check model and output limits.')
++    return output
++
++
++async def answer_with_gpt(messages, text, language, model, cwd):
++    return await asyncio.to_thread(request_gpt, messages, text, language, model)
+diff --git a/whisperflow/windows_qwen.py b/whisperflow/windows_qwen.py
+new file mode 100644
+index 0000000..3d94651
+--- /dev/null
++++ b/whisperflow/windows_qwen.py
+@@ -0,0 +1,265 @@
++"""Optional local Qwen3-TTS VoiceDesign server; no Apple/MLX dependencies.
++
++Starts on loopback. Models load lazily. Existing clone:jarvis can still be used
++by pointing QWEN_TTS_URL at the original owner's compatible voice server.
++"""
++from __future__ import annotations
++
++import argparse
++from http.server import BaseHTTPRequestHandler, HTTPServer
++import io
++import json
++import logging
++import os
++from pathlib import Path
++import random
++import threading
++import subprocess
++import tempfile
++from http.server import ThreadingHTTPServer
++
++from .windows import PROFILES, ROOT
++
++REFERENCES = ROOT / '.references'
++
++
++def reference_status():
++    return {name: (REFERENCES / (name + '.wav')).is_file() for name in ('jarvis', 'deckard')}
++
++
++class VoiceDesigner:
++    def __init__(self, device='auto'):
++        self.model = None
++        self.device = device
++        self.lock = threading.Lock()
++        self.model_kind = None
++        self.idle_timer = None
++        self.playback_lock = threading.Lock()
++        self.playback_generation = 0
++
++    def unload_idle(self):
++        if self.lock.acquire(blocking=False):
++            try:
++                self.model = None
++                self.model_kind = None
++                import gc
++                gc.collect()
++            finally:
++                self.lock.release()
++
++    def schedule_unload(self):
++        if self.idle_timer:
++            self.idle_timer.cancel()
++        self.idle_timer = threading.Timer(60, self.unload_idle)
++        self.idle_timer.daemon = True
++        self.idle_timer.start()
++
++    def generate(self, data):
++        try:
++            from . import native_qwen
++            voice = data.get('voice', 'clone:jarvis')
++            if voice == 'clone:deckard' and data.get('language') not in ('ko','Korean'):
++                raise ValueError('Deckard is Korean only. Choose Jarvis for English.')
++            if native_qwen.available() and voice in ('clone:jarvis', 'clone:deckard'):
++                reference = REFERENCES / (voice.split(':')[1] + '.wav')
++                if not reference.is_file():
++                    raise ValueError('Reference recording is not installed for ' + voice + '.')
++                text = data.get('text', '').strip()
++                if not text or len(text) > 2000:
++                    raise ValueError('Text must contain 1–2000 characters.')
++                language = {'Korean': 'ko', 'English': 'en', 'ko':'ko', 'en':'en'}.get(data.get('language'))
++                if language is None:
++                    raise ValueError('Choose Korean or English.')
++                with self.lock:
++                    audio = native_qwen.generate(text, reference, language, int(data.get('seed',42)))
++            else:
++                audio = self._generate(data)
++            default_effect = 'soft' if voice == 'clone:deckard' else 'none'
++            effect = data.get('robot_effect', default_effect)
++            if effect != 'none':
++                from .voice_effects import robot_effect
++                audio = robot_effect(audio, effect)
++            return audio
++        finally:
++            self.schedule_unload()
++
++    def _generate(self, data):
++        import numpy as np
++        import soundfile as sf
++        import torch
++        from qwen_tts import Qwen3TTSModel
++
++        code = {'Korean': 'ko', 'English': 'en', 'ko': 'ko', 'en': 'en'}.get(data.get('language'), 'ko')
++        voice = data.get('voice', 'design:' + code)
++        if voice not in ('design:ko', 'design:en', 'clone:jarvis', 'clone:deckard'):
++            raise ValueError('Choose design:ko, design:en, clone:jarvis or clone:deckard.')
++        is_clone = voice.startswith('clone:')
++        if not is_clone:
++            code = voice.split(':')[1]
++        reference = REFERENCES / (voice.split(':')[1] + '.wav')
++        if is_clone and not reference.is_file():
++            raise ValueError('Reference recording is not installed for ' + voice + '.')
++        text = data.get('text', '').strip()
++        if not text or len(text) > 2000:
++            raise ValueError('Text must contain 1–2000 characters.')
++        with self.lock:
++            if self.idle_timer:
++                self.idle_timer.cancel()
++            kind = 'Base' if is_clone else 'VoiceDesign'
++            if self.model is not None and self.model_kind != kind:
++                self.model = None
++                import gc
++                gc.collect()
++            if self.model is None:
++                device = self.device
++                if device == 'auto':
++                    device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
++                # GTX 1660 does not support bfloat16. SDPA avoids a FlashAttention install.
++                # bfloat16 on CPU halves Base-model weights; no GPU driver update is needed.
++                # CPU kernels may emulate it on older hardware, so actual speed must be measured.
++                dtype = torch.float16 if device.startswith('cuda') else (
++                    torch.bfloat16 if is_clone else torch.float32)
++                if device == 'cpu':
++                    import psutil
++                    minimum = 2 if is_clone else 8
++                    if psutil.virtual_memory().available < minimum * 2**30:
++                        raise RuntimeError(f'At least {minimum} GB of free RAM is required for this '
++                                           'CPU mode. Close unused applications and retry.')
++                model_id = ('Qwen/Qwen3-TTS-12Hz-0.6B-Base' if is_clone else
++                            'Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign')
++                self.model = Qwen3TTSModel.from_pretrained(
++                    model_id, device_map=device,
++                    dtype=dtype, attn_implementation='sdpa', low_cpu_mem_usage=True)
++                self.model_kind = kind
++            seed = int(data.get('seed', 42))
++            random.seed(seed)
++            np.random.seed(seed)
++            torch.manual_seed(seed)
++            if is_clone:
++                waves, rate = self.model.generate_voice_clone(
++                    text=text, language=PROFILES[code]['language'],
++                    ref_audio=str(reference), x_vector_only_mode=True,
++                    max_new_tokens=min(1024, max(96, len(text) * 6)))
++            else:
++                waves, rate = self.model.generate_voice_design(
++                    text=text, language=PROFILES[code]['language'],
++                    instruct=data.get('instruct') or PROFILES[code]['instruct'],
++                    max_new_tokens=2048)
++            output = io.BytesIO()
++            sf.write(output, waves[0], rate, format='WAV', subtype='PCM_16')
++            return output.getvalue()
++
++
++def play_local(audio, speed=1):
++    """Local playback, independent of an open browser or which assistant called."""
++    if os.name != 'nt':
++        raise RuntimeError('Local playback is implemented for Windows.')
++    import winsound
++    output = ROOT / '.windows-data' / 'speech'
++    output.mkdir(parents=True, exist_ok=True)
++    destination = output / 'last-speech.wav'
++    if speed != 1:
++        import imageio_ffmpeg
++        with tempfile.TemporaryDirectory() as temporary:
++            source, target = Path(temporary) / 'input.wav', Path(temporary) / 'output.wav'
++            source.write_bytes(audio)
++            subprocess.run([imageio_ffmpeg.get_ffmpeg_exe(), '-v', 'error', '-i', str(source),
++                            '-af', f'atempo={speed}', '-y', str(target)], check=True,
++                           capture_output=True, timeout=30, creationflags=subprocess.CREATE_NO_WINDOW)
++            audio = target.read_bytes()
++    destination.write_bytes(audio)
++    winsound.PlaySound(str(destination), winsound.SND_FILENAME | winsound.SND_ASYNC)
++    return {'accepted': True, 'playing': True}
++
++
++def make_handler(designer):
++    class Handler(BaseHTTPRequestHandler):
++        def respond(self, code, body, content_type='application/json'):
++            self.send_response(code)
++            self.send_header('Content-Type', content_type)
++            self.send_header('Content-Length', str(len(body)))
++            self.end_headers()
++            self.wfile.write(body)
++
++        def do_GET(self):
++            if self.path == '/health':
++                self.respond(200, json.dumps({'ready': True, 'loaded': designer.model is not None,
++                    'references': reference_status(),
++                    'voices': ['clone:jarvis', 'clone:deckard', 'design:ko', 'design:en']}).encode())
++            else:
++                self.respond(404, b'{"error":"Not found"}')
++
++        def do_POST(self):
++            host = self.headers.get('Host', '').split(':')[0]
++            origin = self.headers.get('Origin')
++            if host not in ('127.0.0.1', 'localhost') or (
++                origin is not None and origin not in ('http://127.0.0.1:8767', 'http://localhost:8767')):
++                self.respond(403, b'{"error":"Local requests only"}')
++                return
++            if self.headers.get('Content-Type', '').split(';')[0] != 'application/json':
++                self.respond(415, b'{"error":"Use application/json"}')
++                return
++            if self.path not in ('/generate', '/speak', '/stop'):
++                self.respond(404, b'{"error":"Not found"}')
++                return
++            try:
++                size = int(self.headers.get('Content-Length', 0))
++                if not 0 < size <= 20000:
++                    raise ValueError('Invalid request size.')
++                data = json.loads(self.rfile.read(size))
++                if self.path == '/stop':
++                    import winsound
++                    with designer.playback_lock:
++                        designer.playback_generation += 1
++                        winsound.PlaySound(None, 0)
++                    self.respond(200, b'{"stopped":true}')
++                    return
++                if self.path == '/speak':
++                    speed = float(data.get('speed', 1))
++                    if not .5 <= speed <= 2:
++                        raise ValueError('Invalid speed.')
++                    with designer.playback_lock:
++                        designer.playback_generation += 1
++                        generation = designer.playback_generation
++                    audio = designer.generate(data)
++                    with designer.playback_lock:
++                        if generation != designer.playback_generation:
++                            self.respond(200, b'{"accepted":true,"playing":false,"cancelled":true}')
++                            return
++                        result = play_local(audio, speed)
++                    self.respond(200, json.dumps(result).encode())
++                else:
++                    self.respond(200, designer.generate(data), 'audio/wav')
++            except Exception as exc:
++                logging.exception('Voice generation failed')
++                self.respond(500, json.dumps({'error': str(exc)}).encode())
++    return Handler
++
++
++def main():
++    parser = argparse.ArgumentParser()
++    parser.add_argument('--port', type=int, default=9093)
++    parser.add_argument('--device', default='auto')
++    parser.add_argument('--sample', choices=['ko', 'en'])
++    args = parser.parse_args()
++    # Keep model cache beside the application, not in the user's home directory.
++    os.environ.setdefault('HF_HOME', str(ROOT / '.models'))
++    designer = VoiceDesigner(args.device)
++    if args.sample:
++        code = args.sample
++        text = ('시스템 점검을 마쳤습니다. 모든 기능이 정상입니다.' if code == 'ko'
++                else 'System checks are complete. Everything is operating normally.')
++        audio = designer.generate({'text': text, 'voice': 'design:' + code,
++                                   'language': PROFILES[code]['language']})
++        destination = ROOT / 'samples'
++        destination.mkdir(exist_ok=True)
++        file = destination / f'voice-{code}.wav'
++        file.write_bytes(audio)
++        print(file)
++        return
++    print(f'Qwen VoiceDesign: http://127.0.0.1:{args.port}', flush=True)
++    ThreadingHTTPServer(('127.0.0.1', args.port), make_handler(designer)).serve_forever()
++
++
++if __name__ == '__main__':
++    main()
+diff --git a/whisperflow/windows_ui.py b/whisperflow/windows_ui.py
+new file mode 100644
+index 0000000..145cd9c
+--- /dev/null
++++ b/whisperflow/windows_ui.py
+@@ -0,0 +1,51 @@
++"""Adapt the original visual UI without changing the macOS pages."""
++
++
++def render_windows_ui(source: str) -> str:
++    replacements = {
++        "<head>": '<head>\n<script src="/windows-language.js"></script>',
++        "'ws://' + window.location.hostname + ':8767'": "'ws://' + window.location.host",
++        "const isMobileView = window.innerWidth <= 600;":
++            "const isMobileView = window.innerWidth <= 600;",
++        "recognition.lang = 'ko-KR';": "recognition.lang = window.JarvisLanguage.locale();",
++        "if (isMobileView) {\n        // Mobile: use Web Speech API (phone mic)":
++            "if (true) {\n        // Windows and mobile use the browser microphone.",
++        "text: msgText\n": "text: msgText, ...window.JarvisLanguage.options()\n",
++        "handleMessage(msg);": "window.JarvisLanguage.receive(msg);\n          handleMessage(msg);",
++        "const msg = JSON.parse(event.data);":
++            "const msg = JSON.parse(event.data); window.JarvisLanguage.bind(ws);",
++        "recognition.onstart = () => {":
++            "window.JarvisLanguage.setRecognition(recognition);\n      recognition.onstart = () => {",
++        "// Play \"Yes, sir\" before starting recognition (original speed)":
++            "// Preserve the original English acknowledgement in English mode.",
++        "fetch('/sounds/yes_sir.wav')":
++            "(window.JarvisLanguage.language() === 'en' ? fetch('/sounds/yes_sir.wav') : Promise.reject())",
++        "case 'tts_done': {": "case 'tts_done': {",
++        "function stopTtsPlayback() {":
++            "function stopTtsPlayback() {\n      if (window.speechSynthesis) window.speechSynthesis.cancel();",
++        "ttsAudioPlaying = false;\n        // 주의:":
++            "ttsAudioPlaying = false;\n        setUIState('idle');\n        // 주의:",
++        "chatAttachBtn.addEventListener('click', () => chatFileInput.click());":
++            "chatAttachBtn.style.display = 'none'; // Voice-only bridge: no file uploads.",
++        'id="valModel">LARGE-V3': 'id="valModel">NOT CONNECTED',
++        '<span class="label">SAMPLE RATE</span>': '<span class="label">INPUT</span>',
++        '<span class="value">16,000 Hz</span>': '<span class="value">BROWSER MIC</span>',
++        '<span class="value">TYPE</span>': '<span class="value">VOICE + TEXT</span>',
++        '<span class="value active">QWEN</span>': '<span class="value active" id="windowsEngine">SYSTEM</span>',
++        'id="valMode">YOUTUBE': 'id="valMode">VOICE CHAT',
++        '<span class="value">1.4x</span>': '<span class="value" id="windowsSpeed">1.0x</span>',
++    }
++    for old, new in replacements.items():
++        if old not in source:
++            raise RuntimeError(f"Upstream UI changed; expected fragment missing: {old[:70]}")
++        source = source.replace(old, new)
++    # Clear microphone transcript before aborting, so switching languages cannot auto-send it.
++    source = source.replace("</body>", """<script>
++window.addEventListener('jarvis-language-change', () => {
++  if (typeof chatSlideInput !== 'undefined') chatSlideInput.value = '';
++  if (typeof stopWebSpeech === 'function') stopWebSpeech();
++  if (typeof stopTtsPlayback === 'function') stopTtsPlayback();
++  if (typeof webSpeechRecognition !== 'undefined') webSpeechRecognition = null;
++});
++</script></body>""")
++    return source
+diff --git a/windows-config.example.json b/windows-config.example.json
+new file mode 100644
+index 0000000..6a0fd26
+--- /dev/null
++++ b/windows-config.example.json
+@@ -0,0 +1,5 @@
++{
++  "QWEN_TTS_URL": "http://127.0.0.1:9093",
++  "JARVIS_TTS_VOICE": "clone:jarvis",
++  "JARVIS_TTS_SPEED": "1.4"
++}

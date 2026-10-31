@@ -1,0 +1,13 @@
+{
+  "upstream": "https://github.com/kshicdi/whisperflow",
+  "upstream_commit": "8cea155c539d92b7095a12a6125ee1f2f9a3e887",
+  "source_commit": "762f6e25f1df4a57900db5d35a0f4e7d43ceb5ed",
+  "tests_passed": 17,
+  "presets": [
+    "jarvis-ko",
+    "jarvis-en",
+    "deckard-ko-soft"
+  ],
+  "private_recordings_included": false,
+  "models_included": false
+}
