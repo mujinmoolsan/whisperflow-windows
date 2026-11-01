@@ -8,8 +8,8 @@
     },
     {
       "path": "CLAUDE-HANDOFF.md",
-      "bytes": 9279,
-      "sha256": "9c4a8c2c290e18c0bc902d029c71fa62692cdd16d84b3b8dba36d7107c3f4696"
+      "bytes": 10508,
+      "sha256": "c52b3e4330e7544922551830de8e41563f659b356ae49bc2672b337aa247f358"
     },
     {
       "path": "CLAUDE.md",
@@ -118,8 +118,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 6503,
-      "sha256": "43ad94f33b322b470b7ef0c044531f216b514566d0caf0be148823a14867663e"
+      "bytes": 7253,
+      "sha256": "32868501abc0292dbf5d5d125936343d932fa0457f91aa140180b0542a9c22bf"
     },
     {
       "path": "requirements-companion.txt",
@@ -277,6 +277,11 @@
       "sha256": "6709b484b24e59d53c0af7889c92ae7c2d90a841079b9faca460dd6a1e2fd8b7"
     },
     {
+      "path": "tests/web/test_armor_display.cjs",
+      "bytes": 5346,
+      "sha256": "c0f7a8015e107f98d11a37217eaf225094f2192e2aa1550a88a50a8bd3ea6906"
+    },
+    {
       "path": "tests/web/test_deckard_avatar.mjs",
       "bytes": 5325,
       "sha256": "aff20f6af057c8f72262846341da9692b15db3a0cb06e8a9b793d33816027ef4"
@@ -285,6 +290,11 @@
       "path": "tests/web/test_jarvis_motion.cjs",
       "bytes": 6462,
       "sha256": "7e629ac109a056f01166cf6b0998084f215d27069f9746beff1dc9802f817597"
+    },
+    {
+      "path": "tests/web/test_lab_activity.cjs",
+      "bytes": 18051,
+      "sha256": "5a7ad412475998515bb7f7975e242eb1b94a77af6538050d393de507a719979f"
     },
     {
       "path": "tests/web/test_official_browser.cjs",
@@ -368,8 +378,8 @@
     },
     {
       "path": "VALIDATION.md",
-      "bytes": 1602,
-      "sha256": "d52851ec63fb3d1430e96a838eccbce89bea784d70708a9a57ca17e8e88c5d7e"
+      "bytes": 2051,
+      "sha256": "48e97e339ce8fefdd0b47747a8af6b98204f2adefddb843e85a498eb7b4364c5"
     },
     {
       "path": "VOICE-COMMANDS.md",
@@ -567,6 +577,16 @@
       "sha256": "cfe4645c1cd7d352564d5b31dbec6ea726a79c9118bb8d359a02e595124197d8"
     },
     {
+      "path": "whisperflow/static/armor-display.css",
+      "bytes": 343,
+      "sha256": "c0c9e127ceb4089bd28ad14c8e89b7e9c8ab037b74f2409944acafcf1c2af1e2"
+    },
+    {
+      "path": "whisperflow/static/armor-display.js",
+      "bytes": 13075,
+      "sha256": "047219439dbe16d7bc33025403bcc22ce034a441682b8b2063f66fc8ca2d3136"
+    },
+    {
       "path": "whisperflow/static/assistant.html",
       "bytes": 32439,
       "sha256": "5453456bf4a90257d9901eb5b5614a37f669a80596335b3614f6ab99f36b79a8"
@@ -583,8 +603,8 @@
     },
     {
       "path": "whisperflow/static/companion.html",
-      "bytes": 9801,
-      "sha256": "c51d38d244a554bdcf77f08614ea2a96f743cacb7b247036ca2e803b61d31b01"
+      "bytes": 10019,
+      "sha256": "38f355c8c8b0d5b46fc33009bff8c89e9898155d961e0ef8559019950cf07121"
     },
     {
       "path": "whisperflow/static/companion.js",
@@ -655,6 +675,16 @@
       "path": "whisperflow/static/jarvis_mockup.html",
       "bytes": 14507,
       "sha256": "35d8b9e207e1de460afd88aebcbabc8d7770b4f146893d28e93f54d8f6f59b0f"
+    },
+    {
+      "path": "whisperflow/static/lab-activity.css",
+      "bytes": 785,
+      "sha256": "dd8e4adb500762fae248624ee096f93ba38b23994145fb1c04065934d36d8511"
+    },
+    {
+      "path": "whisperflow/static/lab-activity.js",
+      "bytes": 19876,
+      "sha256": "33b98af1cdbeef8c1280323d8aeb4a22ad211892f0638fa51237ef17ce3585f4"
     },
     {
       "path": "whisperflow/static/lab-background.png",

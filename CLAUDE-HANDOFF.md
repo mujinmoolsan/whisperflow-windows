@@ -13,13 +13,16 @@ Repository: <https://github.com/mujinmoolsan/whisperflow-windows>. Sharing branc
 - A character-themed workspace with selection, task history, microphone controls, and account-connection status.
 - A regenerated Deckard upper-body portrait with mouth and jaw movement driven by the audio that is actually playing. It is a fixed-view **2.5D articulated portrait**, not a freely rotatable volumetric model. The image is mapped to a shallow Three.js mesh. Local speech envelopes and live output levels both drive the mouth. Eighteen offline geometry/lifecycle checks passed; neutral and speaking browser renders were reviewed.
 - A Jarvis blue electron-cloud renderer with volume, continuously flowing light, and visible motion. It replaces the earlier point-and-line graph appearance. Its app-specific motion toggle can explicitly opt into motion while preserving the operating system's reduced-motion preference. Twenty-four offline rendering and lifecycle checks passed.
-- Character-specific workspace skins: a minimal cyan laboratory for Jarvis, with six screens, a robot arm on the right, and three empty display alcoves on the left; an empty headquarters interior for Deckard, with architectural ivory, navy, and gold panels across the whole interface and no background teammates. The existing character selector also updates the brand, captions, footer, browser title, and theme color. Both final themes were visually reviewed in the running app with no browser console errors observed, and the controller's initial-state, switching, and state-preservation checks passed.
+- Character-specific workspace skins: a cyan laboratory for Jarvis, with six technical screens, an animated robot arm on the left, and three armor displays; an empty headquarters interior for Deckard, with architectural ivory, navy, and gold panels across the whole interface and no background teammates. The character selector also updates the brand, captions, footer, browser title, and theme color.
+- A decorative laboratory layer with drawings, waveforms, circuits, and exploded views. Every screen is marked DESIGN VISUAL: these graphics are not PC, microphone, model, or network telemetry. The layer does not request APIs or change voice/input behavior. Lifecycle checks cover frame limits, persona switching, motion preferences, visibility, zero size, duplicate inclusion, BFCache, teardown, and pointer transparency.
+- Three procedural Three.js armor props: silver, red/gold with a circular reactor, and red/gold with a triangular reactor. They use a fixed camera, small head/wrist movements, and reactor lighting. They are authored geometric approximations, not trained models or official film assets; reference photographs are excluded from the public source. Twelve mocked lifecycle checks passed, including WebGL context loss and GPU-resource disposal.
+- Browser review confirmed the six screens, left arm, and three armor displays with no console errors observed. The motion toggle pauses both new layers, and selecting Deckard hides them. Both character skins and the existing controller's state-preservation behavior were also reviewed.
 - Existing local speech support, phrase segmentation, exact-text audio caching, and next-segment prefetch. The selected local voices remain available.
 - An adapted official OpenAI Live Console browser transport, pinned to commit `5f64ecb3009d8274da9953c825d469ea6b6b67c3`. Source attribution and the MIT license are retained under `third_party/openai-live-console/`. Session start, cancellation, stale-event ownership, and close handling were tested with mocks.
 
 ## What is not working yet
 
-The requested armor suits in Jarvis's three left display alcoves are not included. Image generation for that addition was blocked, so the current background retains empty alcoves.
+The armor's raster image-generation attempt was blocked; the implemented alternative is procedural 3D geometry. Its fixed-view decorative props do not reproduce the detail of a production film asset or offer a user-operated model viewer.
 
 **Applying the official transport code did not activate realtime conversation.** No OpenAI API project/key or registered Jarvis/Deckard OpenAI voice IDs are configured. The Live option remains disabled. ChatGPT or Claude subscription login is not an API credential. No end-to-end latency claim is supported by the mock tests.
 
@@ -59,6 +62,8 @@ Official references:
 - `whisperflow/static/companion.js`: UI, microphone flow, and task/speech events.
 - `whisperflow/static/jarvis-neural.js`: Jarvis animation.
 - `whisperflow/static/persona-theme.css`, `persona-theme.js`: workspace skins, character labels, and theme switching.
+- `whisperflow/static/lab-activity.css`, `lab-activity.js`: decorative technical screens and robot-arm motion.
+- `whisperflow/static/armor-display.css`, `armor-display.js`: procedural armor geometry and animation lifecycle.
 - `whisperflow/static/deckard-avatar.js`, `deckard-avatar.css`, `deckard-resynthesized.png`: Deckard portrait and mouth animation.
 
 ## Continuation instructions
