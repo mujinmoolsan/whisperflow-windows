@@ -1,24 +1,18 @@
-> 전체 실행 소스는 [WhisperFlow-Windows-source.zip](WhisperFlow-Windows-source.zip)에 있습니다. 압축을 풀고 그 안의 실행 안내를 따르세요.
-> 코드 변경 전체는 [WINDOWS-PATCH.patch](WINDOWS-PATCH.patch)에서 바로 검토할 수 있습니다. 브라우저로 소스와 패치를 공유하는 저장소입니다.
+# 자비스 · 데커드 음성작업실
 
-# Jarvis Shared Voice — Windows 한국어 / English
+2026-11-01 작업실 공유본입니다. **[최신 전체 소스 ZIP 다운로드](Voice-Studio-2026-11-01-source.zip)** 후 압축을 풀어 코드와 실행 안내를 확인하세요. 이 브랜치는 소스 ZIP과 인수인계 문서를 제공합니다. 기존 `main`은 이전 배포본을 유지합니다.
 
-기존 GPT/Codex와 Claude에서 같은 로컬 음성 도구를 호출하는 Windows 확장판입니다.
+Claude에서 이어서 작업할 때는 **[CLAUDE-HANDOFF.md](CLAUDE-HANDOFF.md)**부터 읽어주세요.
 
-- **목소리:** 자비스 / 로봇수사대 케이캅스 데커드
-- **선택:** 자비스 한국어 / 자비스 English / 데커드 한국어. 영어 데커드는 제공하지 않습니다.
-- **공통 연결:** MCP의 `jarvis_status`, `jarvis_speak`, `jarvis_stop`
-- **역할 분리:** 기존 GPT·Claude가 명령 처리와 답변을 담당하고 Qwen은 음성 합성·재생을 담당합니다.
-- **확인 상태:** 한국어·영어 음성 샘플 생성과 MCP 프로토콜 연결을 검증했습니다. 데커드는 약한 로봇 효과를 기본으로 사용합니다. 기존 사용자 앱의 연결 설정과 원격 배포는 별도 단계입니다.
-- **권장 설치:** `Setup-Native-Qwen.cmd`로 공식 llama.cpp CPU 실행 파일과 Qwen GGUF 모델을 설치합니다. 짧은 시험 문장의 전체 실행은 약 12–15초였습니다. 실시간 음성 대화 수준의 지연을 보장하지 않습니다.
+- 자비스: 입체감 있게 흐르는 푸른 전자 구름, 화면 6개와 오른쪽 로봇 팔이 있는 간결한 연구실.
+- 데커드: 상반신 2.5D 이미지와 음성에 맞춘 입 움직임, 동료 캐릭터가 없는 본부 배경과 전체 패널 테마.
+- 캐릭터 선택 시 배경, 패널, 제목과 안내 문구가 함께 바뀝니다.
+- 공식 OpenAI Live 연결 코드는 포함됐지만 실제 API 실시간 대화는 아직 활성화되지 않았습니다. 음색을 유지하는 클라우드 스트리밍 경로는 [설계안](CLOUD-REALTIME-PLAN.md) 단계입니다.
 
-설정 안내: [CONNECTIONS.md](CONNECTIONS.md), Windows 실행 안내: [WINDOWS.md](WINDOWS.md).
+[검증 결과](VALIDATION.md)에는 Python, 공식 연결, 데커드, 자비스 및 테마 전환 검사 범위를 정리했습니다. 실제 API 지연이나 새 서비스 음색 품질을 검증한 결과는 아닙니다.
 
-웹앱의 원격 커넥터 연결은 로컬 MCP 연결과 다릅니다. GitHub에 코드를 올리는 것만으로 GPT·Claude 웹앱 연결이 완료되지는 않습니다. 원격 HTTPS/OAuth는 아직 배포하지 않았습니다.
+자비스 연구실 왼쪽의 슈트 3개 요청은 이미지 생성이 차단되어 반영하지 못했습니다. 현재는 빈 전시 공간 3개로 남아 있습니다.
 
-참조한 프로젝트:
+음성 원본, 모델, API 키, 계정 정보, 개인 설정과 대화 기록은 제외했습니다. 새 환경에서는 필요한 음성·계정을 별도로 설정해야 합니다. 소스 파일별 해시는 [SHARE-MANIFEST.json](SHARE-MANIFEST.json), ZIP 해시는 [BUNDLE-INFO.json](BUNDLE-INFO.json)에서 확인할 수 있습니다.
 
-- [kshicdi/whisperflow](https://github.com/kshicdi/whisperflow): 원본 브라우저 시각화와 음성 서버 분리 구조. 원본 MIT 라이선스를 유지합니다.
-- [yogen-ghodke-113/VoiceClaw](https://github.com/yogen-ghodke-113/VoiceClaw): 대화와 실행 역할 분리, 상태 표시 구조 참고. 코드를 복사해 통합하지 않았습니다.
-
-영화·애니메이션 참조 녹음, 대화 기록, 모델, 계정 키는 공개 소스에 포함하지 않습니다. **케이캅스 데커드는 디아블로의 데커드 케인이 아닙니다.**
+Claude 앱으로 직접 전송하거나 로그인한 것은 아닙니다. 이 공유 자료를 Claude에 제공해 작업을 이어갈 수 있습니다.

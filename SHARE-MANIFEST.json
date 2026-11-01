@@ -1,0 +1,795 @@
+{
+  "format": 1,
+  "files": [
+    {
+      "path": ".gitignore",
+      "bytes": 1250,
+      "sha256": "1d3bbcd00510aa7a7dacfb65c3ba739c9e941ebc8e47e807d6721bacca07f7af"
+    },
+    {
+      "path": "CLAUDE-HANDOFF.md",
+      "bytes": 9279,
+      "sha256": "9c4a8c2c290e18c0bc902d029c71fa62692cdd16d84b3b8dba36d7107c3f4696"
+    },
+    {
+      "path": "CLAUDE.md",
+      "bytes": 3746,
+      "sha256": "85f541f19b0a6b0de4d211174e955d613518c77a826d0e2881ad2159f2658fa7"
+    },
+    {
+      "path": "CLOUD-REALTIME-PLAN.md",
+      "bytes": 6944,
+      "sha256": "945f58d92fab952102661cd36091902c359ed454a344e2f7481a8404dd357642"
+    },
+    {
+      "path": "CONNECTIONS.md",
+      "bytes": 4315,
+      "sha256": "4c1481414d0214ee65767eb83babaa147b9097b6f3210a46c792a41bf4561ad0"
+    },
+    {
+      "path": "docs/features/drive_mode.md",
+      "bytes": 2350,
+      "sha256": "f16d3ad6a6a9679bd4f3795d66ba454ed1bfc2dcb62e5d7ca54c35522f414856"
+    },
+    {
+      "path": "docs/features/gesture_control.md",
+      "bytes": 4174,
+      "sha256": "3119c1aa960ace0aa37e9f08056e66189287287a0a45af6b653743afe6efb9d8"
+    },
+    {
+      "path": "docs/features/headless-macmini.md",
+      "bytes": 3916,
+      "sha256": "b8d252e1642a69aecc3fd8ac76990a94bbc91d99ddb446009e2b2c5a632b3d02"
+    },
+    {
+      "path": "docs/features/tts_sound_map.md",
+      "bytes": 3979,
+      "sha256": "c2f347e98ca457ae9c11f456f50647674f36d8ae8f7f17583de15bb8cb618ec3"
+    },
+    {
+      "path": "docs/features/youtube-jarvis-video.md",
+      "bytes": 5626,
+      "sha256": "befa40d2785aa258844da70743df8495d94a8e1540c37271cb34cfd8dd7853d6"
+    },
+    {
+      "path": "docs/HEADLESS_SETUP.md",
+      "bytes": 6562,
+      "sha256": "3e0ef0aef77133a106eb301550ec9f0385ce0c55addbe270b1ac5dc3cf10c03e"
+    },
+    {
+      "path": "docs/tv_layout_mockup.html",
+      "bytes": 35537,
+      "sha256": "ceccacee529e67c174a00dcd6c74fa6444b0e23da52991e314b49021d4c5e97d"
+    },
+    {
+      "path": "find_voice_candidates.py",
+      "bytes": 5538,
+      "sha256": "3be584d7f75a205bb4071dac6dee0ec31501b84caea8bee7b19190666c3bda50"
+    },
+    {
+      "path": "HANDOFF.md",
+      "bytes": 366,
+      "sha256": "10e94bcb3b58c6f3370a82bce56d6da79ae1fffe621ec5b11a22bd9ffb0fc2d4"
+    },
+    {
+      "path": "hooks/jarvis_code_hook.sh",
+      "bytes": 2411,
+      "sha256": "90080c664dd5e3e8e5d16f4cf7460e2ffcdad685eaa84a9ee22310c15bfbe58c"
+    },
+    {
+      "path": "hooks/jarvis_hook.sh",
+      "bytes": 514,
+      "sha256": "1fc50c09dcc7b660a69165e7682c0082afc11e4dae4f8348457ce08f39669270"
+    },
+    {
+      "path": "hooks/tars_tts_hook.sh",
+      "bytes": 4409,
+      "sha256": "f03de5f30b850615443ce211c3475a15323908d45e133ca03b210a5b811b9550"
+    },
+    {
+      "path": "launch_companion.py",
+      "bytes": 2094,
+      "sha256": "c44c37025ac43cdad82ff47fe752c9a162d3f0ed70467813003fbcbede2af738"
+    },
+    {
+      "path": "launch_qwen_windows.py",
+      "bytes": 1321,
+      "sha256": "efcb1ff24d67cae212839461bd2c284a3e5b4cac8f535b8fc4b7b3f54d5c289f"
+    },
+    {
+      "path": "launch_windows.py",
+      "bytes": 1629,
+      "sha256": "83b79f3c935601ac68192b1414f929dca39597b7633648f01cbd4fccd309ec3d"
+    },
+    {
+      "path": "LICENSE",
+      "bytes": 1144,
+      "sha256": "5e323a2a09ecc15dea9478583975e0ff83f87e676257dacfdd3b77ce9d2a067f"
+    },
+    {
+      "path": "make_connection_configs.py",
+      "bytes": 848,
+      "sha256": "680abc91113747398c65c013c535e922a43977578b6e79daee6add7b9467c416"
+    },
+    {
+      "path": "prepare_reference.py",
+      "bytes": 1284,
+      "sha256": "4c93718ae240c77b3be09bcca4bac77e4c20edd3920865457fdefbf1acae39e3"
+    },
+    {
+      "path": "README.md",
+      "bytes": 6503,
+      "sha256": "43ad94f33b322b470b7ef0c044531f216b514566d0caf0be148823a14867663e"
+    },
+    {
+      "path": "requirements-companion.txt",
+      "bytes": 45,
+      "sha256": "4d227cc765c18e1727c9643e554ad25f67784d41d34287dc1a1e7f478ed3a24a"
+    },
+    {
+      "path": "requirements-headless.txt",
+      "bytes": 169,
+      "sha256": "388977d0ae1f98b27d6afba3c6a68eee10a831bfc7e8b719e472168375396e71"
+    },
+    {
+      "path": "requirements-qwen-windows.txt",
+      "bytes": 152,
+      "sha256": "a04cb2a0eed9324634a4e53cdc75b6e370fc0d1304773c15c56130d9cf3e90ef"
+    },
+    {
+      "path": "requirements-windows.txt",
+      "bytes": 67,
+      "sha256": "9d169184879d02238a60b6cd460f0dd3581363a32667a7025d5f0b73955ace76"
+    },
+    {
+      "path": "requirements.txt",
+      "bytes": 99,
+      "sha256": "a184e8c1477dbf0e03418856d5f35e1498fb9806a77212f7fc8df96a24a0d10b"
+    },
+    {
+      "path": "run_desktop_mcp.py",
+      "bytes": 80,
+      "sha256": "e3f716cab2863cc99b6160365c67e0ea31ef14ad00cf54763c0575f6fbfd2685"
+    },
+    {
+      "path": "run_jarvis_mcp.py",
+      "bytes": 280,
+      "sha256": "abb6f67b6aa2a2caf321c132be3db2b96c9dd97d028bdd2c9a9f1972a1adbb3e"
+    },
+    {
+      "path": "scripts/jarvis_chrome.sh",
+      "bytes": 1384,
+      "sha256": "3e88dbdb2f1cec3ebeefe96d80de06bdcf7309c3319fee556d3d77e439b00814"
+    },
+    {
+      "path": "Setup-Native-Qwen.cmd",
+      "bytes": 301,
+      "sha256": "dac8f331957608dd57fe994ea24619c6c79b332d0a87bb6933578c37da2c820f"
+    },
+    {
+      "path": "Setup-Qwen-CPU.cmd",
+      "bytes": 300,
+      "sha256": "1b9e875e7fd08e3fe4f78938e7b92455e78f10fbe602e647bb36a94389c39038"
+    },
+    {
+      "path": "setup.py",
+      "bytes": 866,
+      "sha256": "e0ade614c279abe704a4cef3ec252229128f36476f77d45630ac2d483e5bdbb0"
+    },
+    {
+      "path": "setup_claude_portable.py",
+      "bytes": 1447,
+      "sha256": "083cc3f9087992633a1c6349c2cb7c730b4ca764e0e26500d4a38ea2870a3c6a"
+    },
+    {
+      "path": "setup_native_windows.py",
+      "bytes": 2554,
+      "sha256": "42d8816173af3d60c86e72ff81d936acf6202873f5878605eb114be6ae5175ee"
+    },
+    {
+      "path": "setup_qwen_windows.py",
+      "bytes": 1069,
+      "sha256": "4dda222ae3a8fa00253636bb77274e8fb70ad4e42ea57913ebaa5cea6a8dd247"
+    },
+    {
+      "path": "Start-Companion.cmd",
+      "bytes": 309,
+      "sha256": "3baa86cdf23a84b5a7f0f9d984ddba93e5e92035255f6c4810fa5e21976df1df"
+    },
+    {
+      "path": "Start-Jarvis-MCP.cmd",
+      "bytes": 283,
+      "sha256": "08a866ce7a85e3400c01b2407d936a0c519aab4a2cfc245e1c86a5be64cc7655"
+    },
+    {
+      "path": "Start-Qwen-CPU.cmd",
+      "bytes": 315,
+      "sha256": "d92a0d98d771db59c012a02b88149edd0fc0fa1881bd15d9ea4e9358a8a47bae"
+    },
+    {
+      "path": "test_jarvis_ui.py",
+      "bytes": 2783,
+      "sha256": "0db4d5549436219df417ba9b63676fd0255eafa2747754d399814c94d1e4dcba"
+    },
+    {
+      "path": "tests/test_approved_voice.py",
+      "bytes": 2770,
+      "sha256": "39134b932fe1e57621b5b9fe0fc1c1ac098235c725894acbddb3d5df1ed5d728"
+    },
+    {
+      "path": "tests/test_companion.py",
+      "bytes": 6699,
+      "sha256": "a14370de900c240a8cfa54b697b726b86822e2e489e12f30f3b4866b78fa29a2"
+    },
+    {
+      "path": "tests/test_latency.py",
+      "bytes": 2608,
+      "sha256": "617606f147a59a65b2e7116cadbf51e5beba1af771a446c82852a70de9a2b99f"
+    },
+    {
+      "path": "tests/test_live_companion.py",
+      "bytes": 10932,
+      "sha256": "a8c9e363b9e548acbe7fd59e3a68cc47cb7ac13665e3a9d43ecad8122f7b80f4"
+    },
+    {
+      "path": "tests/test_live_session.py",
+      "bytes": 12434,
+      "sha256": "9a482213dff181fa11cf281a2c86954cb55aa81890a715228492258d009d6523"
+    },
+    {
+      "path": "tests/test_login_connection.py",
+      "bytes": 4624,
+      "sha256": "a87d1d2ed1f3af733b363ddad718e77fa4f09383e4727d46b9f2af0e87296f45"
+    },
+    {
+      "path": "tests/test_mcp.py",
+      "bytes": 1916,
+      "sha256": "920af819b695d27ed2c1678b4cf391adbce4f934d4fe2768b6b8f537e95d0422"
+    },
+    {
+      "path": "tests/test_native.py",
+      "bytes": 2054,
+      "sha256": "b7b4d3bf88b082026f38936f0063719edf6836b9b1245c62dff54603b3bb6dfc"
+    },
+    {
+      "path": "tests/test_official_bridge.py",
+      "bytes": 6709,
+      "sha256": "82c61bc56f8d8af96ec613c3fe15e1ec2eb08049a603df657df1fb280299d3ff"
+    },
+    {
+      "path": "tests/test_openai.py",
+      "bytes": 1383,
+      "sha256": "0329e1a42ccd5cb30bc774bb0b106aea50bac5afa266478b764dd01b8fdd3f7d"
+    },
+    {
+      "path": "tests/test_speech_pipeline.py",
+      "bytes": 3797,
+      "sha256": "009e1fb2034447573ce83a4dc50d8d2a0cd2d80d1ac16ab2f6289257607dc589"
+    },
+    {
+      "path": "tests/test_voice_service.py",
+      "bytes": 2907,
+      "sha256": "38c94757bb8a9694d7aacaeb9e0ef3430e57c6c513eb8e3a7609916f3f90c32e"
+    },
+    {
+      "path": "tests/test_windows.py",
+      "bytes": 6186,
+      "sha256": "6709b484b24e59d53c0af7889c92ae7c2d90a841079b9faca460dd6a1e2fd8b7"
+    },
+    {
+      "path": "tests/web/test_deckard_avatar.mjs",
+      "bytes": 5325,
+      "sha256": "aff20f6af057c8f72262846341da9692b15db3a0cb06e8a9b793d33816027ef4"
+    },
+    {
+      "path": "tests/web/test_jarvis_motion.cjs",
+      "bytes": 6462,
+      "sha256": "7e629ac109a056f01166cf6b0998084f215d27069f9746beff1dc9802f817597"
+    },
+    {
+      "path": "tests/web/test_official_browser.cjs",
+      "bytes": 8218,
+      "sha256": "25c833ff86961ee3f3cd10098d6b2c54225cd94d802b7070e153328698632439"
+    },
+    {
+      "path": "tests/web/test_persona_theme.cjs",
+      "bytes": 4215,
+      "sha256": "aefa05d10e97a6da5b8688e38526db2a528ad6b38b623f56ba2d41592a7599e2"
+    },
+    {
+      "path": "third_party/openai-live-console/adapted-session.ts",
+      "bytes": 18177,
+      "sha256": "f563ef683f289b2c57e4033d4f047c6e70bf933b7d4606aca537afff1e01b07a"
+    },
+    {
+      "path": "third_party/openai-live-console/build-runtime.mjs",
+      "bytes": 5192,
+      "sha256": "1068cff8a9dcc203cccda88cb5dff7e0be9ad01082a52489a8f8adb3fe05dfe9"
+    },
+    {
+      "path": "third_party/openai-live-console/DEPLOYMENT.json",
+      "bytes": 1694,
+      "sha256": "a3dcd3a68a6d8d99cedafa8efeecd72a09d26c24b63f679fcf7c07f1bc740094"
+    },
+    {
+      "path": "third_party/openai-live-console/INTEGRATION.md",
+      "bytes": 4759,
+      "sha256": "2723ee9cfa1cfb7ff1d7f406ea8bf194e4c22eb3989bd1ced336c38dd668450c"
+    },
+    {
+      "path": "third_party/openai-live-console/SOURCE.json",
+      "bytes": 2247,
+      "sha256": "3f2bd440c3eabfcc50369809915121aeb5fc0b1a845ac835c1833adac305f649"
+    },
+    {
+      "path": "third_party/openai-live-console/THIRD_PARTY_NOTICES.md",
+      "bytes": 2687,
+      "sha256": "611a3c4ab93593ebc4525630a03facf4f97fdd13fcd45e86aaa3b1df8ab12f20"
+    },
+    {
+      "path": "third_party/openai-live-console/upstream/client/session.ts",
+      "bytes": 15871,
+      "sha256": "34cc0bcd7d6683cc8bd018172f96a1bd8530629f6c1aaa39c31fef25bc7491e7"
+    },
+    {
+      "path": "third_party/openai-live-console/upstream/LICENSE",
+      "bytes": 1063,
+      "sha256": "7de1e115d165f176e68f962acdb809b5ab8d8ae78d3981e0701392b2ac50c713"
+    },
+    {
+      "path": "third_party/openai-live-console/upstream/package.json",
+      "bytes": 1127,
+      "sha256": "6c4fa586d80fd2a0b6ba72185540647b1f3670a174363378bbb5f4e7ff55509f"
+    },
+    {
+      "path": "third_party/openai-live-console/upstream/README.md",
+      "bytes": 5998,
+      "sha256": "f93551b1164c0368ce74d6e8d81ca4a272f2eed63cb9dd6394e23a0c8b75407c"
+    },
+    {
+      "path": "third_party/openai-live-console/upstream/server/openai.ts",
+      "bytes": 4011,
+      "sha256": "de7c9c12eba459e171179f0bc37652a484c3de52703beb2a38a9a8832cd0f0e3"
+    },
+    {
+      "path": "third_party/openai-live-console/upstream/server/protocol.ts",
+      "bytes": 5748,
+      "sha256": "053ce8cdbed20bc874a9dd729a914a1f60d3ac5950e7fb4a1d0c41f7df53ce02"
+    },
+    {
+      "path": "third_party/openai-live-console/upstream/server/session.ts",
+      "bytes": 19083,
+      "sha256": "4edf62617873203700e14f4d426ffcbe402550a6cc4a78b54a48c05361192545"
+    },
+    {
+      "path": "third_party/openai-live-console/upstream/shared/types.ts",
+      "bytes": 1431,
+      "sha256": "164cbcae927f0e36fcaa7ab00bf234eb2149aa77dbc56772c1cdefae7bbf7a4d"
+    },
+    {
+      "path": "VALIDATION.md",
+      "bytes": 1602,
+      "sha256": "d52851ec63fb3d1430e96a838eccbce89bea784d70708a9a57ca17e8e88c5d7e"
+    },
+    {
+      "path": "VOICE-COMMANDS.md",
+      "bytes": 4649,
+      "sha256": "5f09dfd400b432ae2d35f66c3194ebcd62f810805343f637cd41faed8a9c208a"
+    },
+    {
+      "path": "whisperflow/__init__.py",
+      "bytes": 87,
+      "sha256": "a6099fdcfa6d7cc4be469c343ef6d052f9be74ea2bea370a8ec6721eb70df8d5"
+    },
+    {
+      "path": "whisperflow/__main__.py",
+      "bytes": 92,
+      "sha256": "a1a0818339bade5f5ab20c9426099651267264a6845502434e841c3f43d17a02"
+    },
+    {
+      "path": "whisperflow/agent_runner.py",
+      "bytes": 11081,
+      "sha256": "cf398f14eb4f03d940c10285523645f966f2bceb5568e4a2c2c70e5e172b0d95"
+    },
+    {
+      "path": "whisperflow/always_listen.py",
+      "bytes": 23775,
+      "sha256": "9c70abb705cd07547c0a9b97cdd28de81283d1015102f946da6f14b2eaa743c8"
+    },
+    {
+      "path": "whisperflow/app.py",
+      "bytes": 58856,
+      "sha256": "08cb1278064abf0b314d7a45a63f270b25ce9df734ef704101e67d52fd5090f8"
+    },
+    {
+      "path": "whisperflow/app_launcher.py",
+      "bytes": 13445,
+      "sha256": "830f831fcd6de9cacdfdc0549672e9aa26fae19baf4526fa1280eaeaca97233f"
+    },
+    {
+      "path": "whisperflow/approved_voice.py",
+      "bytes": 12847,
+      "sha256": "c68e858cb0faa3a3f9635be7b46c0dbc42b883148eb28f6df578644e71d2b5c6"
+    },
+    {
+      "path": "whisperflow/assistant_session.py",
+      "bytes": 15258,
+      "sha256": "52bd9f749f19df9da2ad8d1a60b675c7cf735aa3944515231b146c2bd9ceeac7"
+    },
+    {
+      "path": "whisperflow/audio_recorder.py",
+      "bytes": 4037,
+      "sha256": "fef82a9023aeed422536d24d91f2b3144399a1418d0b5db2fccfff2e732fe865"
+    },
+    {
+      "path": "whisperflow/browser_feed.py",
+      "bytes": 7679,
+      "sha256": "6fdb586a75ba78b84d2128b4c92e79acd9ba259f097ba0062591783bb1b7596f"
+    },
+    {
+      "path": "whisperflow/camera_capture.py",
+      "bytes": 2447,
+      "sha256": "816e2f6df4011fe36d641f7cfa7e18db17bc0eddfa2531e6c0172c99b199d893"
+    },
+    {
+      "path": "whisperflow/camera_feed.py",
+      "bytes": 7636,
+      "sha256": "226700c4ccdedd67c084ae26adc2249e4d2eaf043d2af14a947daf7c9909ee29"
+    },
+    {
+      "path": "whisperflow/codex_stream.py",
+      "bytes": 8618,
+      "sha256": "7eafaa5abd7cce4c4ce9d642ddc852c5bcb02cee7144b81d5c411adff6d92994"
+    },
+    {
+      "path": "whisperflow/companion.py",
+      "bytes": 34259,
+      "sha256": "41baa336b3cff18f69401fb148180cb27a10a6683707a3efe068c0b8ec7d4263"
+    },
+    {
+      "path": "whisperflow/config.py",
+      "bytes": 1927,
+      "sha256": "f1b6d52180f5705b6f3e55ad216913945339de74b30a668cf72ece1cebe8b501"
+    },
+    {
+      "path": "whisperflow/desktop_actions.py",
+      "bytes": 10232,
+      "sha256": "6f7996d8b6b5361b8d6d6af2cc85980d5531f3b53e03bbd600b2d5a7ff103235"
+    },
+    {
+      "path": "whisperflow/desktop_mcp.py",
+      "bytes": 2543,
+      "sha256": "7419c7d61f8bf78f7b591a5239a84a52120c2eb8f7ddf5c349abde5e506dc442"
+    },
+    {
+      "path": "whisperflow/face_manager.py",
+      "bytes": 45668,
+      "sha256": "708317932551e17d4954187159f5f2acf9c5e3571cd35470dbc38cf0ad8f133e"
+    },
+    {
+      "path": "whisperflow/filming_scenarios.py",
+      "bytes": 8320,
+      "sha256": "4c4b42541fd60d583fdac9ee3bf98949716e07cb574d226963acb7549409e9f6"
+    },
+    {
+      "path": "whisperflow/gesture_control.py",
+      "bytes": 55888,
+      "sha256": "d4ab8638a132179f68ed5f5776ed580865ca77938f7d1ca8b23793ecaf912565"
+    },
+    {
+      "path": "whisperflow/headless.py",
+      "bytes": 2326,
+      "sha256": "69f08b6a103125a825209c576811b0e1856aa3ee1af2ac177f55b417e7276266"
+    },
+    {
+      "path": "whisperflow/headless_tts.py",
+      "bytes": 13891,
+      "sha256": "24adb3c77a16e29ddf8563dda60ddc1967d09fa74d9b14927c8b46050ccf809f"
+    },
+    {
+      "path": "whisperflow/history_manager.py",
+      "bytes": 3817,
+      "sha256": "8e86e092e96bd0e346ed8b7e6ec79967e7a552306c375b5a09e311bcd447049f"
+    },
+    {
+      "path": "whisperflow/hotkey_manager.py",
+      "bytes": 19267,
+      "sha256": "49c62736c37eeac29226cadba747e5df31b693244edb343d789012e8a6f24f7c"
+    },
+    {
+      "path": "whisperflow/hue_controller.py",
+      "bytes": 9181,
+      "sha256": "c001c038f9f73af019100154a433d87b1c1e141f3d43ad077fda5c37c20233d7"
+    },
+    {
+      "path": "whisperflow/jarvis_mcp.py",
+      "bytes": 4348,
+      "sha256": "0b33f8f72b1532aa3d3bfd5f35eaaa78efc7201117c999851346f703be914cd6"
+    },
+    {
+      "path": "whisperflow/jarvis_send.py",
+      "bytes": 1591,
+      "sha256": "44c84be314d34a2a8b3a30e7213bac511329cf5cd07618c1585d9f0b8d8cc5d2"
+    },
+    {
+      "path": "whisperflow/live_session.py",
+      "bytes": 24479,
+      "sha256": "204e81080a8f6ca90c4f5a8794200351321d3d5c84bb77b88563bab46eb4532a"
+    },
+    {
+      "path": "whisperflow/login_console.py",
+      "bytes": 1105,
+      "sha256": "d2319f2f6cb76971e7b29f5521f49348c271eee9313ca6b11559f0e265b417e3"
+    },
+    {
+      "path": "whisperflow/map_navigator.py",
+      "bytes": 4350,
+      "sha256": "8317cdd4535cab8c78e5b8bbde9096deb9d2504432f91fc761d52308c4dd142c"
+    },
+    {
+      "path": "whisperflow/native_qwen.py",
+      "bytes": 2964,
+      "sha256": "56d73c5640d528478ac35e6b547554346e603e8bcaf849e00673c8d7e4863416"
+    },
+    {
+      "path": "whisperflow/scripts/make_10k_gif.py",
+      "bytes": 7659,
+      "sha256": "4ea2c8f5cca54757e448e4007f5ea49fc0d53e419091182d72585983cae5136f"
+    },
+    {
+      "path": "whisperflow/scripts/restore_windows.scpt",
+      "bytes": 474,
+      "sha256": "c7913575bcee81735c22b17e0f279f4edea8906832c7eed7342b10806c2f8042"
+    },
+    {
+      "path": "whisperflow/scripts/show_gif.py",
+      "bytes": 1906,
+      "sha256": "837f72fc8f612fbe077f4d577bdc7f38e9066af403646b81cc820d0f286e0445"
+    },
+    {
+      "path": "whisperflow/speech_envelope.py",
+      "bytes": 2694,
+      "sha256": "2f32079e4af82a871c02f5f071e988754adac58243866b7c47daf07d7e582880"
+    },
+    {
+      "path": "whisperflow/speech_input.py",
+      "bytes": 2251,
+      "sha256": "e80c8d225c33d2a6ec6daad1e181f1876b09393b986b3383cd0c040e428a95a8"
+    },
+    {
+      "path": "whisperflow/speech_segments.py",
+      "bytes": 551,
+      "sha256": "f8bc955d65287a1a2055afd7abb52ac5c3fa837ef7ab3946e6797fafa90c7979"
+    },
+    {
+      "path": "whisperflow/speech_worker.py",
+      "bytes": 1960,
+      "sha256": "cfe4645c1cd7d352564d5b31dbec6ea726a79c9118bb8d359a02e595124197d8"
+    },
+    {
+      "path": "whisperflow/static/assistant.html",
+      "bytes": 32439,
+      "sha256": "5453456bf4a90257d9901eb5b5614a37f669a80596335b3614f6ab99f36b79a8"
+    },
+    {
+      "path": "whisperflow/static/compact-layout.css",
+      "bytes": 1586,
+      "sha256": "77bd9332bf6da248d332d81236dee82e9af8cbd5b0b47a44842bf28b05ca2223"
+    },
+    {
+      "path": "whisperflow/static/companion.css",
+      "bytes": 18738,
+      "sha256": "179eb61e3c61e917092a23cd9a27379bc46d1c2863ccf919b9e9e3c40de5f2e9"
+    },
+    {
+      "path": "whisperflow/static/companion.html",
+      "bytes": 9801,
+      "sha256": "c51d38d244a554bdcf77f08614ea2a96f743cacb7b247036ca2e803b61d31b01"
+    },
+    {
+      "path": "whisperflow/static/companion.js",
+      "bytes": 21933,
+      "sha256": "2a7055094ea14c88d97ff73b15ec918e2a3046311230803014586ae87532d1f1"
+    },
+    {
+      "path": "whisperflow/static/deckard-avatar.css",
+      "bytes": 1195,
+      "sha256": "6724dd33575c413732d7698f0721eb903bbe6294be5bc86cd6cd8438454ccd5e"
+    },
+    {
+      "path": "whisperflow/static/deckard-avatar.js",
+      "bytes": 10646,
+      "sha256": "e51906ae363f55f465266c62ca4552089713a74be9d227e2c862092df7cb803c"
+    },
+    {
+      "path": "whisperflow/static/deckard-resynthesized.png",
+      "bytes": 1526634,
+      "sha256": "8d50a7d8734a1cb5c9627691e7bfbaff0b8af9301f02798f3af547fd536e941b"
+    },
+    {
+      "path": "whisperflow/static/deckard-team-hangar.png",
+      "bytes": 1794508,
+      "sha256": "b5a65a2fb068633df2ea38eb7f6b62d4006040b1ec2981b53b6e41d600c2c1fc"
+    },
+    {
+      "path": "whisperflow/static/face_hud.html",
+      "bytes": 38297,
+      "sha256": "a415d785a30bddde72d6b619bd5ecb5114d25519957448cbdf04a61bd28c311e"
+    },
+    {
+      "path": "whisperflow/static/jarvis-cinematic-lab.png",
+      "bytes": 1939660,
+      "sha256": "422a60142ef754af51ff39fdc801a216865249daa6036ed814aa5d02c1b2a121"
+    },
+    {
+      "path": "whisperflow/static/jarvis-icon-180.png",
+      "bytes": 22320,
+      "sha256": "1a659c555a80fb7d17952eb022fa4cfed247eebad0ac23ef87b5ea91652b5678"
+    },
+    {
+      "path": "whisperflow/static/jarvis-icon-192.png",
+      "bytes": 25257,
+      "sha256": "b70d1c179cf9af474431d18691e377e873a03369b897c351008752ba98df931a"
+    },
+    {
+      "path": "whisperflow/static/jarvis-icon.svg",
+      "bytes": 926,
+      "sha256": "10e91c1f5fca618c749f93cc2a58b41adc81546afc8448e4e6c49a12556b63f1"
+    },
+    {
+      "path": "whisperflow/static/jarvis-neural.js",
+      "bytes": 12306,
+      "sha256": "42c377cf1d1c4868cfed95f2e40af0c30a279ae2f5f13eb4b01d5ca79c76b701"
+    },
+    {
+      "path": "whisperflow/static/jarvis.html",
+      "bytes": 175024,
+      "sha256": "76c3013678576895b6efb0f68de6e83ff44b7ca0d67f64d734888f273c54d468"
+    },
+    {
+      "path": "whisperflow/static/jarvis_browser_mockup.html",
+      "bytes": 17801,
+      "sha256": "94fe6f86d0a8a68d2d088b1fe145091c3d06273838af75f7f0d4adb095e90258"
+    },
+    {
+      "path": "whisperflow/static/jarvis_mockup.html",
+      "bytes": 14507,
+      "sha256": "35d8b9e207e1de460afd88aebcbabc8d7770b4f146893d28e93f54d8f6f59b0f"
+    },
+    {
+      "path": "whisperflow/static/lab-background.png",
+      "bytes": 2068687,
+      "sha256": "8b63fc850f1fa7815553c503ddbce54db4a52e6fed4d195c1d9e8b1a90470692"
+    },
+    {
+      "path": "whisperflow/static/lab-theme.css",
+      "bytes": 11862,
+      "sha256": "bdc8a055ee7cdb613bcf481268c8d7ece073a98d9ced8c4caea3f04c75212862"
+    },
+    {
+      "path": "whisperflow/static/live-client.js",
+      "bytes": 5716,
+      "sha256": "3ccb74b95266b698b0c365d20acb68ba5b5c85ecd2ea53da9255130d69721faf"
+    },
+    {
+      "path": "whisperflow/static/live-ui.css",
+      "bytes": 775,
+      "sha256": "92fad22a7daebe60aab26b41670cfb8bdd00578335e453052622653371379a30"
+    },
+    {
+      "path": "whisperflow/static/mobile-mockups.html",
+      "bytes": 20958,
+      "sha256": "7411c2fa6ec271e4450dd12ef914e92ad8b7833b0e5d1833e73c1c28bf9c020d"
+    },
+    {
+      "path": "whisperflow/static/persona-theme.css",
+      "bytes": 17624,
+      "sha256": "c05d2298062fe089ad6d55fc4cd226db80efb83fafcb3db0adb356e36f4be058"
+    },
+    {
+      "path": "whisperflow/static/persona-theme.js",
+      "bytes": 2218,
+      "sha256": "4ea6598786ddb15d5696b49a35e382e1afed9081fbb1efc2c6b3e5728925069c"
+    },
+    {
+      "path": "whisperflow/static/vendor/OPENAI-LIVE-LICENSE.txt",
+      "bytes": 1063,
+      "sha256": "7de1e115d165f176e68f962acdb809b5ab8d8ae78d3981e0701392b2ac50c713"
+    },
+    {
+      "path": "whisperflow/static/vendor/openai-live-session.js",
+      "bytes": 18177,
+      "sha256": "2db3507d2f9c1ce286f7f5f85af19d749a5efdb0f3b01402a2deb6c3a3ff5f59"
+    },
+    {
+      "path": "whisperflow/static/vendor/THREE-LICENSE.txt",
+      "bytes": 1081,
+      "sha256": "4c40a1ef62450b857c3b2aaf294936304cd552d965fbcd9d32d4c5bcf4ba4454"
+    },
+    {
+      "path": "whisperflow/static/vendor/three.module.js",
+      "bytes": 1314681,
+      "sha256": "ce1fa418de16a19495a9f72495580e3015d7745c296d3ce0485897f902ddedfb"
+    },
+    {
+      "path": "whisperflow/static/windows-language.js",
+      "bytes": 12893,
+      "sha256": "a5024cbe808b5d04282f1efd715e67584641c836fb1f5adccfa071e2b061401c"
+    },
+    {
+      "path": "whisperflow/tars_mode.py",
+      "bytes": 6106,
+      "sha256": "f9f208dee2fd7383a16b8cc348e6bab3291b8aa5d6fbe07de4a33aa139625955"
+    },
+    {
+      "path": "whisperflow/tars_session.py",
+      "bytes": 6142,
+      "sha256": "828f9245df5467e9151ae6069ba6ab757114ea838bcff7e4e68c6406b15b138c"
+    },
+    {
+      "path": "whisperflow/text_output.py",
+      "bytes": 3933,
+      "sha256": "8b89f19e6f1c9ef3456d7b4a145ae6fe8be28f63aac1defc3f39fe3dc4d02989"
+    },
+    {
+      "path": "whisperflow/transcriber.py",
+      "bytes": 3785,
+      "sha256": "3624e17a86ee713b8f2b2a66389dd42ea7d944b178d360a9ad5e964e9d18df75"
+    },
+    {
+      "path": "whisperflow/tts_reader.py",
+      "bytes": 6662,
+      "sha256": "bc236b199d7ee5ae8de127e0583286c5f0d6a3e5c32fff51c34ac1de35f16f40"
+    },
+    {
+      "path": "whisperflow/voice_commands.py",
+      "bytes": 3679,
+      "sha256": "6d251a56ef172483dae1e511f2708b46a055e70ff3ee080977f2775b83b9b547"
+    },
+    {
+      "path": "whisperflow/voice_effects.py",
+      "bytes": 1907,
+      "sha256": "6706ee586c1a8eb9a3ae5fd0c00300d32d4ec5d7b0c9f248738da8c0f77ca866"
+    },
+    {
+      "path": "whisperflow/windows.py",
+      "bytes": 16850,
+      "sha256": "b6551b78f85018cc1c85071c25fe2bcea4b9e36be8799c82026b60ef68efdb3d"
+    },
+    {
+      "path": "whisperflow/windows_openai.py",
+      "bytes": 2132,
+      "sha256": "7df6845cc49157f62c6c6c75a93d00776c87aaf4e393ff48fbbcab953a42dd6a"
+    },
+    {
+      "path": "whisperflow/windows_qwen.py",
+      "bytes": 14589,
+      "sha256": "7def696a514a1ed5a138b8cc5ba842d795f1073b17f2ce46bb93363bd80871d4"
+    },
+    {
+      "path": "whisperflow/windows_ui.py",
+      "bytes": 3298,
+      "sha256": "99777490d8b72d70a736a9b4fb9c144cb20c5c6216d9df8ccb1937ccd077db65"
+    },
+    {
+      "path": "whisperflow/ws_server.py",
+      "bytes": 25588,
+      "sha256": "96afb75ffee0069c57514aa7fac6e4ad252e7a0ea041a18934081c6aa0f8bac9"
+    },
+    {
+      "path": "WhisperFlow.command",
+      "bytes": 115,
+      "sha256": "057686d5641aa19ab28db57b0bbadfa9a9c6f10cccfbc9737a0b8c6c09819a13"
+    },
+    {
+      "path": "windows-config.example.json",
+      "bytes": 113,
+      "sha256": "24a7e285372c1c2caa958dc4c0acc824295663889de4d4a9f721ed600f0ad364"
+    },
+    {
+      "path": "WINDOWS.md",
+      "bytes": 7303,
+      "sha256": "f55b64efec688c031101968cb27e981e28636de3df90b4ae71a520c7f5527d4d"
+    }
+  ]
+}
