@@ -1,7 +1,7 @@
 diff -ruN orig-vs/CLAUDE-GPU.md voice-studio-2026-11-01/CLAUDE-GPU.md
 --- orig-vs/CLAUDE-GPU.md	1970-01-01 09:00:00.000000000 +0900
-+++ voice-studio-2026-11-01/CLAUDE-GPU.md	2026-11-01 12:30:41.840013794 +0900
-@@ -0,0 +1,25 @@
++++ voice-studio-2026-11-01/CLAUDE-GPU.md	2026-11-01 12:47:48.986399481 +0900
+@@ -0,0 +1,37 @@
 +# 자비스 한국어 음성 GPU 전환 (Claude, 2026-11-01)
 +
 +GPT의 Voice Studio(2026-11-01) 위에 **한 가지만** 바꿨습니다: 자비스 한국어가 쓰는 네이티브 GGUF 엔진(`whisperflow/native_qwen.py`)을 그래픽카드로 돌리는 것.
@@ -21,6 +21,18 @@ diff -ruN orig-vs/CLAUDE-GPU.md voice-studio-2026-11-01/CLAUDE-GPU.md
 +1. NVIDIA 드라이버 최신 확인 (이 PC: Studio 617.42 / GTX 1660 SUPER 확인됨).
 +2. `Setup-GPU.cmd` 실행 → `GPU (CUDA 12.4) voice runtime is ready.`
 +3. Voice Studio를 다시 시작하고 자비스 한국어로 같은 문장을 말하게 해서 첫 소리까지 시간을 비교합니다.
++
++## 실측 (이 PC, 2026-11-01, GTX 1660 SUPER / Studio 617.42)
++
++같은 문장 "부회장님, 시스템 점검을 마쳤습니다. 모든 기능이 정상입니다." 자비스 한국어 승인 프리셋:
++
++| 실행 | 생성 시간 | 음성 길이 |
++|---|---|---|
++| CPU | 11.69초 | 4.88초 |
++| GPU 첫 실행 (CUDA 캐시 생성, 1회만) | 106.98초 | 5.76초 |
++| GPU 두 번째부터 | **5.32초** | 5.76초 |
++
++GPU는 음성 길이보다 빨리 만듭니다(실시간 배율 약 0.92). 첫 실행은 드라이버가 CUDA 코드를 한 번 컴파일하는 시간이며, 드라이버를 다시 업데이트하면 한 번 더 생길 수 있습니다.
 +
 +## 아직 검증 안 됨
 +
@@ -146,8 +158,8 @@ diff -ruN orig-vs/setup_native_windows.py voice-studio-2026-11-01/setup_native_w
  
 diff -ruN orig-vs/tests/test_native_gpu.py voice-studio-2026-11-01/tests/test_native_gpu.py
 --- orig-vs/tests/test_native_gpu.py	1970-01-01 09:00:00.000000000 +0900
-+++ voice-studio-2026-11-01/tests/test_native_gpu.py	2026-11-01 12:35:15.085910005 +0900
-@@ -0,0 +1,127 @@
++++ voice-studio-2026-11-01/tests/test_native_gpu.py	2026-11-01 12:39:53.837544170 +0900
+@@ -0,0 +1,140 @@
 +import io
 +from pathlib import Path
 +import tempfile
@@ -272,12 +284,25 @@ diff -ruN orig-vs/tests/test_native_gpu.py voice-studio-2026-11-01/tests/test_na
 +                    native_qwen.generate('잘못된 참조', Path('ref.wav'), 'ko')
 +                self.assertTrue(native_qwen.use_gpu())
 +
++class LocationTests(unittest.TestCase):
++    def test_gpu_runtime_is_found_beside_configured_cpu_runtime(self):
++        with tempfile.TemporaryDirectory() as temporary:
++            native = Path(temporary)/'work/.native'
++            (native/'llama-cuda').mkdir(parents=True)
++            (native/'llama-cuda'/'llama-tts.exe').touch()
++            with patch.dict('os.environ', {'JARVIS_NATIVE_DIR': str(native/'llama')}), \
++                    patch.object(native_qwen, '_cuda_failed', False):
++                os_env = __import__('os').environ
++                os_env.pop('JARVIS_NATIVE_CUDA_DIR', None)
++                self.assertTrue(native_qwen.use_gpu())
++                self.assertEqual(native_qwen.paths()[0], native/'llama-cuda'/'llama-tts.exe')
++
 +
 +if __name__ == '__main__':
 +    unittest.main()
 diff -ruN orig-vs/whisperflow/native_qwen.py voice-studio-2026-11-01/whisperflow/native_qwen.py
 --- orig-vs/whisperflow/native_qwen.py	2026-11-01 12:29:54.548053216 +0900
-+++ voice-studio-2026-11-01/whisperflow/native_qwen.py	2026-11-01 12:35:33.800267303 +0900
++++ voice-studio-2026-11-01/whisperflow/native_qwen.py	2026-11-01 12:47:48.964520573 +0900
 @@ -1,4 +1,9 @@
 -"""Small-process Qwen GGUF backend, using an official llama.cpp Windows build."""
 +"""Small-process Qwen GGUF backend, using an official llama.cpp Windows build.
@@ -289,7 +314,7 @@ diff -ruN orig-vs/whisperflow/native_qwen.py voice-studio-2026-11-01/whisperflow
  import os
  from pathlib import Path
  import subprocess
-@@ -8,16 +13,43 @@
+@@ -8,16 +13,44 @@
  ROOT = Path(__file__).resolve().parents[1]
  _process=None
  _process_lock=threading.Lock()
@@ -312,7 +337,8 @@ diff -ruN orig-vs/whisperflow/native_qwen.py voice-studio-2026-11-01/whisperflow
 +
 +
 +def _cuda_dir():
-+    return Path(os.getenv('JARVIS_NATIVE_CUDA_DIR', ROOT / '.native/llama-cuda'))
++    # Beside the CPU runtime, so a JARVIS_NATIVE_DIR in windows-config.json also finds the GPU build.
++    return Path(os.getenv('JARVIS_NATIVE_CUDA_DIR') or (_cpu_dir().parent / 'llama-cuda'))
 +
 +
 +def use_gpu():
@@ -334,7 +360,7 @@ diff -ruN orig-vs/whisperflow/native_qwen.py voice-studio-2026-11-01/whisperflow
      models = Path(os.getenv('JARVIS_NATIVE_MODEL_DIR', ROOT / '.models/gguf'))
      return runtime / 'llama-tts.exe', models / 'tts-q4.gguf', models / 'codec-q8.gguf'
  
-@@ -27,10 +59,27 @@
+@@ -27,10 +60,27 @@
  
  
  def generate(text, reference, language, seed=42, *, sampling=None, max_frames=None):
@@ -363,7 +389,7 @@ diff -ruN orig-vs/whisperflow/native_qwen.py voice-studio-2026-11-01/whisperflow
      parent = ROOT / '.windows-data/tmp'
      parent.mkdir(parents=True, exist_ok=True)
      with tempfile.TemporaryDirectory(dir=parent) as temporary:
-@@ -44,7 +93,7 @@
+@@ -44,7 +94,7 @@
                  return str(path)
          command = [str(executable), '-m', relative(model), '--mmproj', relative(codec),
                     '-p', text, '--tts-lang', language, '--tts-speaker-file', relative(reference),
@@ -372,16 +398,16 @@ diff -ruN orig-vs/whisperflow/native_qwen.py voice-studio-2026-11-01/whisperflow
                     '-n', str(max_frames or min(1024, max(96, len(text) * 6))),
                     '-b', '64', '-ub', '64', '-c', '1024',
                     '--seed', str(seed), '--repeat-penalty', '1.05']
-@@ -56,7 +105,7 @@
+@@ -56,7 +106,7 @@
                  **({'creationflags': subprocess.CREATE_NO_WINDOW} if os.name == 'nt' else {}))
              _process=process
          try:
 -            _,errors=process.communicate(timeout=300)
-+            _,errors=process.communicate(timeout=120 if gpu else 300)
++            _,errors=process.communicate(timeout=300)  # first GPU run builds the CUDA cache (~110 s observed)
          except subprocess.TimeoutExpired:
              process.kill()
              process.communicate()
-@@ -65,7 +114,9 @@
+@@ -65,7 +115,9 @@
              with _process_lock:
                  if _process is process:
                      _process=None
