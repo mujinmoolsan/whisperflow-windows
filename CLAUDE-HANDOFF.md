@@ -18,6 +18,7 @@ Repository: <https://github.com/mujinmoolsan/whisperflow-windows>. Sharing branc
 - Three procedural Three.js armor props: silver, red/gold with a circular reactor, and red/gold with a triangular reactor. They use a fixed camera, small head/wrist movements, and reactor lighting. They are authored geometric approximations, not trained models or official film assets; reference photographs are excluded from the public source. Twelve mocked lifecycle checks passed, including WebGL context loss and GPU-resource disposal.
 - Browser review confirmed the six screens, left arm, and three armor displays with no console errors observed. The motion toggle pauses both new layers, and selecting Deckard hides them. Both character skins and the existing controller's state-preservation behavior were also reviewed.
 - Existing local speech support, phrase segmentation, exact-text audio caching, and next-segment prefetch. The selected local voices remain available.
+- Reviewed integration of Claude's GPU contribution at `83311556cc3705bc7f4f71b61c5499f0d6d30ecd`. Jarvis Korean native synthesis can select the official CUDA runtime with `-ngl 99`; CPU fallback preserves explicit cancellation, process-start failures are logged, and only an idle owned Deckard worker is released before native GPU synthesis. Both attempts retain the 300-second first-run timeout. See `CLAUDE-GPU.md` inside the extracted source archive. This changes TTS only, not STT, GPT response generation, or full-duplex conversation.
 - An adapted official OpenAI Live Console browser transport, pinned to commit `5f64ecb3009d8274da9953c825d469ea6b6b67c3`. Source attribution and the MIT license are retained under `third_party/openai-live-console/`. Session start, cancellation, stale-event ownership, and close handling were tested with mocks.
 
 ## What is not working yet
@@ -32,7 +33,9 @@ The portable Claude Code CLI is installed but its supported `auth status` comman
 
 - GPT text deltas can reach the UI, but speech synthesis starts only after the final reply has been received and validated. The first reply and first synthesis therefore remain largely serial.
 - The installed Qwen SDK returns a complete generated waveform before playback. Its `non_streaming_mode=False` option does not by itself enable true streaming generation.
-- Deckard currently uses Qwen3-TTS 0.6B Base with PyTorch FP32 on CUDA. Jarvis Korean uses the native GGUF engine with CPU inference. Do not assume both characters use the same GPU path.
+- Deckard uses the Qwen3-TTS 0.6B Base PyTorch path. Jarvis Korean uses the native GGUF engine, now with optional CUDA execution and a CPU fallback. They still use different engines and runtime ownership.
+- A bounded silent local integration test selected the installed CUDA executable with `-ngl 99` and generated 1.332 seconds of 24 kHz audio in 5.867 seconds. Only one native attempt occurred; no CPU fallback was recorded, and CUDA selection remained enabled. The result was neither played nor uploaded. The runtime also enumerated the local NVIDIA GPU. This is a single short synthesis result, not a CPU/GPU comparison, voice-quality check, first-audible latency, or live conversation test. The later source-only change extended the process timeout to 300 seconds; synthesis was not repeated merely for that timeout change.
+- Claude's upstream document separately reports CPU/GPU timings for a different phrase and conditions. Those figures are attributed to its author and were not reproduced by the local short test.
 - Existing timing observations included approximately 6.28 seconds to first text, 8.02 seconds to final reply, and 33.7 seconds to first audio. A cached-audio case still took about 7.05 seconds to first audio. These are historical examples rather than new benchmarks, and exclude input voice-activity detection and transcription time.
 - The browser currently ignores microphone samples during both voice preparation and playback. A simple `voiceBusy` to `playing` substitution is unsafe: preparation may finish during a new utterance, and reconnect snapshots do not independently report playback state. Correct interruption needs explicit voice-only cancellation, a prepare-to-play handshake, and a trustworthy playback snapshot.
 
@@ -58,6 +61,7 @@ Official references:
 - `whisperflow/agent_runner.py`: supported GPT/Claude CLI connection and task execution.
 - `whisperflow/live_session.py`: existing official Live integration boundary and lifecycle.
 - `whisperflow/windows_qwen.py`, `whisperflow/approved_voice.py`: local synthesis and playback path.
+- `whisperflow/native_qwen.py`, `setup_native_windows.py`, `Setup-GPU.cmd`: optional native CUDA runtime, fallback, and cancellation.
 - `whisperflow/static/live-client.js`: browser Live wrapper and output-energy events.
 - `whisperflow/static/companion.js`: UI, microphone flow, and task/speech events.
 - `whisperflow/static/jarvis-neural.js`: Jarvis animation.

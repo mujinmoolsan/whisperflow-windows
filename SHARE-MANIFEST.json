@@ -7,9 +7,14 @@
       "sha256": "1d3bbcd00510aa7a7dacfb65c3ba739c9e941ebc8e47e807d6721bacca07f7af"
     },
     {
+      "path": "CLAUDE-GPU.md",
+      "bytes": 4863,
+      "sha256": "55ed5435f7eb0df695ff4068794f7d4066a96add1c924c468db3118045c14708"
+    },
+    {
       "path": "CLAUDE-HANDOFF.md",
-      "bytes": 10508,
-      "sha256": "c52b3e4330e7544922551830de8e41563f659b356ae49bc2672b337aa247f358"
+      "bytes": 12020,
+      "sha256": "10828079cc53ff9c64c8bfa43b0c473cecd436b385c4e0cccbde49a7d096107a"
     },
     {
       "path": "CLAUDE.md",
@@ -18,8 +23,8 @@
     },
     {
       "path": "CLOUD-REALTIME-PLAN.md",
-      "bytes": 6944,
-      "sha256": "945f58d92fab952102661cd36091902c359ed454a344e2f7481a8404dd357642"
+      "bytes": 7085,
+      "sha256": "a51e87b68c576e92cf7751117c8171b887e87d8c6f8024f8fd488676c3ab0bdb"
     },
     {
       "path": "CONNECTIONS.md",
@@ -118,8 +123,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 7253,
-      "sha256": "32868501abc0292dbf5d5d125936343d932fa0457f91aa140180b0542a9c22bf"
+      "bytes": 8309,
+      "sha256": "163d6ce4ef9ce12e804d79bc1c9c89c5df46066de5c0ec67073d48dec2b74223"
     },
     {
       "path": "requirements-companion.txt",
@@ -162,6 +167,11 @@
       "sha256": "3e88dbdb2f1cec3ebeefe96d80de06bdcf7309c3319fee556d3d77e439b00814"
     },
     {
+      "path": "Setup-GPU.cmd",
+      "bytes": 323,
+      "sha256": "42dc229cb4696644ee1a3d84307fbc5fe10d3fe9f9706ed16ca12a1fc4eb1feb"
+    },
+    {
       "path": "Setup-Native-Qwen.cmd",
       "bytes": 301,
       "sha256": "dac8f331957608dd57fe994ea24619c6c79b332d0a87bb6933578c37da2c820f"
@@ -183,8 +193,8 @@
     },
     {
       "path": "setup_native_windows.py",
-      "bytes": 2554,
-      "sha256": "42d8816173af3d60c86e72ff81d936acf6202873f5878605eb114be6ae5175ee"
+      "bytes": 4972,
+      "sha256": "0cce4837323a4db48576161aa46804b8998f2202d60a5461b529a1688958442b"
     },
     {
       "path": "setup_qwen_windows.py",
@@ -250,6 +260,16 @@
       "path": "tests/test_native.py",
       "bytes": 2054,
       "sha256": "b7b4d3bf88b082026f38936f0063719edf6836b9b1245c62dff54603b3bb6dfc"
+    },
+    {
+      "path": "tests/test_native_gpu.py",
+      "bytes": 6311,
+      "sha256": "5256cd6b0a20aa421165659ae3d72ab07712c39c72867a8d4ef73d4e5cb987d4"
+    },
+    {
+      "path": "tests/test_native_gpu_integration.py",
+      "bytes": 7443,
+      "sha256": "2707ea73a5ea00940dc8a2e73b41c2b8617c52905bb2bd6f5d2bd11467c95213"
     },
     {
       "path": "tests/test_official_bridge.py",
@@ -378,8 +398,8 @@
     },
     {
       "path": "VALIDATION.md",
-      "bytes": 2051,
-      "sha256": "48e97e339ce8fefdd0b47747a8af6b98204f2adefddb843e85a498eb7b4364c5"
+      "bytes": 3053,
+      "sha256": "75b381868758026dc9bfb1f161b0b9359c8eaf099e7cd1797bbdf98184b895db"
     },
     {
       "path": "VOICE-COMMANDS.md",
@@ -418,8 +438,8 @@
     },
     {
       "path": "whisperflow/approved_voice.py",
-      "bytes": 12847,
-      "sha256": "c68e858cb0faa3a3f9635be7b46c0dbc42b883148eb28f6df578644e71d2b5c6"
+      "bytes": 13260,
+      "sha256": "fb382f70b63e870d74d4b4a8f49f2b9c9b6f43df89bf696fbd077c98fedb10b2"
     },
     {
       "path": "whisperflow/assistant_session.py",
@@ -538,8 +558,8 @@
     },
     {
       "path": "whisperflow/native_qwen.py",
-      "bytes": 2964,
-      "sha256": "56d73c5640d528478ac35e6b547554346e603e8bcaf849e00673c8d7e4863416"
+      "bytes": 6041,
+      "sha256": "0f50e59882f238af6162983c3ce6c3810fe3d09ff7985a3624b0c46a57a643df"
     },
     {
       "path": "whisperflow/scripts/make_10k_gif.py",

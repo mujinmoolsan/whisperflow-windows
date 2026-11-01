@@ -6,7 +6,7 @@ Status on 2026-11-01: **design and source investigation only**. This hosted path
 
 The existing application streams GPT text to the UI, but waits for the validated final reply before starting local speech synthesis. Its installed Qwen SDK returns a complete waveform. Phrase segmentation, a resident model, reference conditioning, exact-text caching, and next-phrase prefetch already exist; adding those again does not solve the first-audio delay.
 
-The current engines also differ by character: Deckard uses the Qwen3-TTS 0.6B Base PyTorch path, while Korean Jarvis uses the native GGUF path. The desktop GPU is not the sole explanation for every delay. Historical local timing observations and their limits are summarized in [CLAUDE-HANDOFF.md](CLAUDE-HANDOFF.md).
+The current engines also differ by character: Deckard uses the Qwen3-TTS 0.6B Base PyTorch path, while Korean Jarvis uses the native GGUF path, now with optional CUDA execution and a CPU fallback. The GPU change accelerates a synthesis component; it does not make the existing sequential pipeline streamed or full duplex. Historical observations, the separate short local CUDA test, and their limits are summarized in [CLAUDE-HANDOFF.md](CLAUDE-HANDOFF.md).
 
 ## Proposed architecture
 
