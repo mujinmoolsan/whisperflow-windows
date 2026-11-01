@@ -146,8 +146,8 @@ diff -ruN orig-vs/setup_native_windows.py voice-studio-2026-11-01/setup_native_w
  
 diff -ruN orig-vs/tests/test_native_gpu.py voice-studio-2026-11-01/tests/test_native_gpu.py
 --- orig-vs/tests/test_native_gpu.py	1970-01-01 09:00:00.000000000 +0900
-+++ voice-studio-2026-11-01/tests/test_native_gpu.py	2026-11-01 12:30:12.359674015 +0900
-@@ -0,0 +1,71 @@
++++ voice-studio-2026-11-01/tests/test_native_gpu.py	2026-11-01 12:35:15.085910005 +0900
+@@ -0,0 +1,127 @@
 +import io
 +from pathlib import Path
 +import tempfile
@@ -217,11 +217,67 @@ diff -ruN orig-vs/tests/test_native_gpu.py voice-studio-2026-11-01/tests/test_na
 +                self.assertFalse(native_qwen.use_gpu())
 +
 +
++
++class CancelTests(unittest.TestCase):
++    def test_stopping_gpu_synthesis_does_not_fall_back_or_disable_gpu(self):
++        import threading
++        with tempfile.TemporaryDirectory() as temporary:
++            root = Path(temporary)
++            cuda, cpu, models = root/'llama-cuda', root/'llama', root/'models'
++            for folder in (cuda, cpu, models):
++                folder.mkdir()
++            for file in (cuda/'llama-tts.exe', cpu/'llama-tts.exe', models/'tts-q4.gguf', models/'codec-q8.gguf'):
++                file.touch()
++            started, calls = threading.Event(), []
++
++            class Slow(FakeProcess):
++                def communicate(self, timeout=None):
++                    started.set()
++                    self.killed = threading.Event()
++                    self.killed.wait(2)
++                    self.returncode = -9
++                    return b'', b''
++                def kill(self):
++                    self.killed.set()
++
++            def popen(command, cwd=None, **kwargs):
++                calls.append(Path(command[0]).parent.name)
++                return Slow(command, cwd, False)
++            env = {'JARVIS_NATIVE_CUDA_DIR': str(cuda), 'JARVIS_NATIVE_DIR': str(cpu),
++                   'JARVIS_NATIVE_MODEL_DIR': str(models)}
++            with patch.dict('os.environ', env), patch('subprocess.Popen', side_effect=popen), \
++                    patch.object(native_qwen, '_cuda_failed', False), patch.object(native_qwen, 'ROOT', root):
++                stopper = threading.Thread(target=lambda: (started.wait(2), native_qwen.stop_pending()))
++                stopper.start()
++                with self.assertRaises(native_qwen.SynthesisCancelled):
++                    native_qwen.generate('긴 문장입니다.', Path('ref.wav'), 'ko')
++                stopper.join()
++                self.assertEqual(calls, ['llama-cuda'])
++                self.assertTrue(native_qwen.use_gpu())
++
++    def test_failure_on_both_builds_keeps_gpu_enabled(self):
++        with tempfile.TemporaryDirectory() as temporary:
++            root = Path(temporary)
++            cuda, cpu, models = root/'llama-cuda', root/'llama', root/'models'
++            for folder in (cuda, cpu, models):
++                folder.mkdir()
++            for file in (cuda/'llama-tts.exe', cpu/'llama-tts.exe', models/'tts-q4.gguf', models/'codec-q8.gguf'):
++                file.touch()
++            env = {'JARVIS_NATIVE_CUDA_DIR': str(cuda), 'JARVIS_NATIVE_DIR': str(cpu),
++                   'JARVIS_NATIVE_MODEL_DIR': str(models)}
++            with patch.dict('os.environ', env), \
++                    patch('subprocess.Popen', side_effect=lambda c, cwd=None, **k: FakeProcess(c, cwd, True)), \
++                    patch.object(native_qwen, '_cuda_failed', False), patch.object(native_qwen, 'ROOT', root):
++                with self.assertRaises(RuntimeError):
++                    native_qwen.generate('잘못된 참조', Path('ref.wav'), 'ko')
++                self.assertTrue(native_qwen.use_gpu())
++
++
 +if __name__ == '__main__':
 +    unittest.main()
 diff -ruN orig-vs/whisperflow/native_qwen.py voice-studio-2026-11-01/whisperflow/native_qwen.py
 --- orig-vs/whisperflow/native_qwen.py	2026-11-01 12:29:54.548053216 +0900
-+++ voice-studio-2026-11-01/whisperflow/native_qwen.py	2026-11-01 12:29:54.586115426 +0900
++++ voice-studio-2026-11-01/whisperflow/native_qwen.py	2026-11-01 12:35:33.800267303 +0900
 @@ -1,4 +1,9 @@
 -"""Small-process Qwen GGUF backend, using an official llama.cpp Windows build."""
 +"""Small-process Qwen GGUF backend, using an official llama.cpp Windows build.
@@ -233,15 +289,21 @@ diff -ruN orig-vs/whisperflow/native_qwen.py voice-studio-2026-11-01/whisperflow
  import os
  from pathlib import Path
  import subprocess
-@@ -8,6 +13,7 @@
+@@ -8,16 +13,43 @@
  ROOT = Path(__file__).resolve().parents[1]
  _process=None
  _process_lock=threading.Lock()
 +_cuda_failed=False
++
++
++class SynthesisCancelled(RuntimeError):
++    """The pending synthesis was stopped on purpose; not an engine failure."""
  
  
  def stop_pending():
-@@ -16,8 +22,29 @@
+     with _process_lock:
+         if _process is not None and _process.poll() is None:
++            _process.jarvis_cancelled = True
              _process.kill()
  
  
@@ -272,7 +334,7 @@ diff -ruN orig-vs/whisperflow/native_qwen.py voice-studio-2026-11-01/whisperflow
      models = Path(os.getenv('JARVIS_NATIVE_MODEL_DIR', ROOT / '.models/gguf'))
      return runtime / 'llama-tts.exe', models / 'tts-q4.gguf', models / 'codec-q8.gguf'
  
-@@ -27,10 +54,23 @@
+@@ -27,10 +59,27 @@
  
  
  def generate(text, reference, language, seed=42, *, sampling=None, max_frames=None):
@@ -284,12 +346,16 @@ diff -ruN orig-vs/whisperflow/native_qwen.py voice-studio-2026-11-01/whisperflow
 +    gpu = executable.parent.resolve() == _cuda_dir().resolve()
 +    try:
 +        return _run(executable, model, codec, text, reference, language, seed, sampling, max_frames, gpu)
-+    except RuntimeError:
++    except SynthesisCancelled:
++        raise
++    except (RuntimeError, subprocess.TimeoutExpired):
 +        cpu = _cpu_dir() / 'llama-tts.exe'
 +        if not gpu or not cpu.is_file():
 +            raise
++        audio = _run(cpu, model, codec, text, reference, language, seed, sampling, max_frames, False)
++        # Only blame the GPU when the same request works on the CPU build.
 +        _cuda_failed = True
-+        return _run(cpu, model, codec, text, reference, language, seed, sampling, max_frames, False)
++        return audio
 +
 +
 +def _run(executable, model, codec, text, reference, language, seed, sampling, max_frames, gpu):
@@ -297,7 +363,7 @@ diff -ruN orig-vs/whisperflow/native_qwen.py voice-studio-2026-11-01/whisperflow
      parent = ROOT / '.windows-data/tmp'
      parent.mkdir(parents=True, exist_ok=True)
      with tempfile.TemporaryDirectory(dir=parent) as temporary:
-@@ -44,7 +84,7 @@
+@@ -44,7 +93,7 @@
                  return str(path)
          command = [str(executable), '-m', relative(model), '--mmproj', relative(codec),
                     '-p', text, '--tts-lang', language, '--tts-speaker-file', relative(reference),
@@ -306,9 +372,21 @@ diff -ruN orig-vs/whisperflow/native_qwen.py voice-studio-2026-11-01/whisperflow
                     '-n', str(max_frames or min(1024, max(96, len(text) * 6))),
                     '-b', '64', '-ub', '64', '-c', '1024',
                     '--seed', str(seed), '--repeat-penalty', '1.05']
-@@ -66,6 +106,6 @@
+@@ -56,7 +105,7 @@
+                 **({'creationflags': subprocess.CREATE_NO_WINDOW} if os.name == 'nt' else {}))
+             _process=process
+         try:
+-            _,errors=process.communicate(timeout=300)
++            _,errors=process.communicate(timeout=120 if gpu else 300)
+         except subprocess.TimeoutExpired:
+             process.kill()
+             process.communicate()
+@@ -65,7 +114,9 @@
+             with _process_lock:
                  if _process is process:
                      _process=None
++        if getattr(process, 'jarvis_cancelled', False):
++            raise SynthesisCancelled('Local Qwen synthesis was stopped.')
          if process.returncode or not output.is_file():
 -            (parent.parent/'native-error.log').write_bytes(errors)
 +            (parent.parent/'native-error.log').write_bytes((b'[GPU]\n' if gpu else b'[CPU]\n') + (errors or b''))
